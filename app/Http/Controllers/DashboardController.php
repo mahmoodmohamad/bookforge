@@ -17,11 +17,11 @@ class DashboardController extends Controller
 
     public function getClassName(Request $request)
     {
-        //if ($request->user()->isPatient())
-          //  return Patient\DashboardController::class;
+        //if ($request->user()->isClient())
+          //  return Client\DashboardController::class;
 
         if ($request->user()->isPhysicain())
-            return Physician\DashboardController::class;
+            return Provider\DashboardController::class;
 
         if ($request->user()->isRadiologist())
             return RadiologistDashboardController::class;
@@ -29,8 +29,8 @@ class DashboardController extends Controller
         if ($request->user()->isLabSpecialist())
             return LabSpecialistDashboardController::class;
         
-        if ($request->user()->isSecretary())
-            return Secretary\DashboardController::class;
+        if ($request->user()->isStaff())
+            return Staff\DashboardController::class;
 
         if ($request->user()->isClinicManger())
             return ClinicManger\DashboardController::class;

@@ -1,6 +1,6 @@
-# 🏥 Healthcare Appointment Management System
+# 🏥 Healthcare Booking Management System
 
-A comprehensive web-based appointment management system for healthcare facilities. Built with Laravel 9, this system streamlines patient registration, appointment scheduling, and medical record management.
+A comprehensive web-based Booking management system for healthcare facilities. Built with Laravel 9, this system streamlines Client registration, Booking scheduling, and medical record management.
 
 ![Laravel](https://img.shields.io/badge/Laravel-9.x-red?style=flat-square&logo=laravel)
 ![PHP](https://img.shields.io/badge/PHP-8.1+-blue?style=flat-square&logo=php)
@@ -31,22 +31,22 @@ A comprehensive web-based appointment management system for healthcare facilitie
 
 ### 🔐 Multi-Role Authentication System
 - **Admin**: Full system control and user management
-- **Physician**: Patient consultations and diagnosis management
-- **Secretary**: Patient registration and appointment scheduling
-- **Patient**: View appointments and medical history
+- **provider**: Client consultations and Note management
+- **Secretary**: Client registration and Booking scheduling
+- **Client**: View Bookings and medical history
 
-### 👨‍⚕️ Physician Dashboard
-- Daily appointment schedule
-- Patient medical history access
+### 👨‍⚕️ provider Dashboard
+- Daily Booking schedule
+- Client medical history access
 - Create and edit medical diagnoses
 - Prescription management
-- Appointment filtering and search
+- Booking filtering and search
 
-### 👩‍💼 Secretary Dashboard
-- Patient registration system
-- Appointment booking interface
+### 👩‍💼 StaffDashboard
+- Client registration system
+- Booking booking interface
 - Interactive calendar view
-- Patient management (CRUD operations)
+- Client management (CRUD operations)
 - Search and filter capabilities
 
 ### 🎛️ Admin Dashboard
@@ -55,15 +55,15 @@ A comprehensive web-based appointment management system for healthcare facilitie
 - Activate/Deactivate user accounts
 - Visual charts and reports
 - City-wise distribution reports
-- Top physicians by appointments
+- Top providers by Bookings
 
 ### 📊 Advanced Features
-- Interactive appointment calendar
+- Interactive Booking calendar
 - Real-time availability checking
 - Multi-city support
-- Medical diagnosis tracking
+- Medical Note tracking
 - Prescription history
-- Appointment status management
+- Booking status management
 - Statistical reports with charts
 
 ---
@@ -73,9 +73,9 @@ A comprehensive web-based appointment management system for healthcare facilitie
 | Role | Email | Password |
 |------|-------|----------|
 | **Admin** | admin@example.com | password |
-| **Physician** | alice@example.com | password |
+| **provider** | alice@example.com | password |
 | **Secretary** | secretary1@example.com | password |
-| **Patient** | jane@example.com | password |
+| **Client** | jane@example.com | password |
 
 ---
 
@@ -114,8 +114,8 @@ Before installation, ensure you have:
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/healthcare-appointment-system.git
-cd healthcare-appointment-system
+git clone https://github.com/yourusername/healthcare-Booking-system.git
+cd healthcare-Booking-system
 ```
 
 ### 2. Install PHP Dependencies
@@ -184,17 +184,17 @@ Visit: `http://localhost:8000`
 ![Admin Dashboard](screenshots/admin-dashboard.png)
 *System overview with statistics and charts*
 
-### Physician Dashboard
-![Physician Dashboard](screenshots/physician-dashboard.png)
-*Daily schedule and patient management*
+### provider Dashboard
+![provider Dashboard](screenshots/provider-dashboard.png)
+*Daily schedule and Client management*
 
-### Appointment Calendar
+### Booking Calendar
 ![Calendar View](screenshots/calendar-view.png)
-*Interactive calendar for appointment scheduling*
+*Interactive calendar for Booking scheduling*
 
-### Patient Management
-![Patient List](screenshots/patient-list.png)
-*Comprehensive patient records management*
+### Client Management
+![Client List](screenshots/Client-list.png)
+*Comprehensive Client records management*
 
 ---
 
@@ -203,25 +203,25 @@ Visit: `http://localhost:8000`
 ### User Flow Diagram
 ```
 ┌─────────────┐
-│   Patient   │
+│   Client   │
 └──────┬──────┘
        │
        │ registers with
        ▼
-┌─────────────┐      books appointment      ┌─────────────┐
-│  Secretary  │ ─────────────────────────▶ │ Appointment │
+┌─────────────┐      books Booking      ┌─────────────┐
+│  Staff │ ─────────────────────────▶ │ Booking │
 └──────┬──────┘                             └──────┬──────┘
        │                                           │
-       │ manages patients                          │ assigned to
+       │ manages Clients                          │ assigned to
        │                                           ▼
        │                                    ┌─────────────┐
-       │                                    │  Physician  │
+       │                                    │  provider  │
        │                                    └──────┬──────┘
        │                                           │
        │                                           │ creates
        │                                           ▼
        │                                    ┌─────────────┐
-       └───────────────────────────────────│  Diagnosis  │
+       └───────────────────────────────────│  Note  │
                                             └─────────────┘
 ```
 
@@ -232,32 +232,32 @@ Visit: `http://localhost:8000`
 **users**
 - id, name, email, password, activation
 
-**physicians**
+**providers**
 - id, user_id, specialization, phone, city_id
 
 **secretaries**
 - id, user_id, phone, city_id
 
-**patients**
+**Clients**
 - id, user_id, national_id, phone, city_id, secretary_id
 
-**appointments**
-- id, patient_id, physician_id, secretary_id, appointment_date, appointment_time, status
+**Bookings**
+- id, Client_id, provider_id, secretary_id, Booking_date, Booking_time, status
 
 **diagnoses**
-- id, appointment_id, symptoms, diagnosis, prescription, notes
+- id, Booking_id, symptoms, Note, prescription, notes
 
 ### Relationships
 ```
-users (1) ─────▶ (1) physicians
+users (1) ─────▶ (1) providers
 users (1) ─────▶ (1) secretaries
-users (1) ─────▶ (1) patients
+users (1) ─────▶ (1) Clients
 
-physicians (1) ─▶ (many) appointments
-patients (1) ───▶ (many) appointments
-secretaries (1) ─▶ (many) appointments
+providers (1) ─▶ (many) Bookings
+Clients (1) ───▶ (many) Bookings
+secretaries (1) ─▶ (many) Bookings
 
-appointments (1) ─▶ (1) diagnoses
+Bookings (1) ─▶ (1) diagnoses
 ```
 
 ---
@@ -266,37 +266,37 @@ appointments (1) ─▶ (1) diagnoses
 
 ### For Secretaries
 
-1. **Register New Patient**
-   - Navigate to Patients → Add New Patient
-   - Fill patient information
-   - Patient receives login credentials
+1. **Register New Client**
+   - Navigate to Clients → Add New Client
+   - Fill Client information
+   - Client receives login credentials
 
-2. **Book Appointment**
-   - Go to Appointments → Create New
-   - Select patient and physician
+2. **Book Booking**
+   - Go to Bookings → Create New
+   - Select Client and provider
    - Choose date and time slot
    - System checks availability automatically
 
-3. **Manage Patients**
-   - View all registered patients
+3. **Manage Clients**
+   - View all registered Clients
    - Search by name, national ID, or phone
-   - Edit patient information
-   - View patient medical history
+   - Edit Client information
+   - View Client medical history
 
-### For Physicians
+### For providers
 
 1. **View Daily Schedule**
-   - Dashboard shows today's appointments
+   - Dashboard shows today's Bookings
    - Color-coded by status
-   - Quick access to patient details
+   - Quick access to Client details
 
-2. **Create Diagnosis**
-   - Open appointment details
-   - Click "Add Diagnosis"
-   - Enter symptoms, diagnosis, and prescription
-   - Appointment automatically marked as completed
+2. **Create Note**
+   - Open Booking details
+   - Click "Add Note"
+   - Enter symptoms, Note, and prescription
+   - Booking automatically marked as completed
 
-3. **View Patient History**
+3. **View Client History**
    - Access complete medical history
    - View previous diagnoses
    - Track treatment progress
@@ -328,23 +328,23 @@ Content-Type: application/json
 }
 ```
 
-### Appointments
+### Bookings
 ```http
-GET /api/appointments
+GET /api/Bookings
 Authorization: Bearer {token}
 
-Response: List of appointments
+Response: List of Bookings
 ```
 ```http
-POST /api/appointments
+POST /api/Bookings
 Authorization: Bearer {token}
 Content-Type: application/json
 
 {
-  "patient_id": 1,
-  "physician_id": 2,
-  "appointment_date": "2024-12-30",
-  "appointment_time": "10:00"
+  "Client_id": 1,
+  "provider_id": 2,
+  "Booking_date": "2024-12-30",
+  "Booking_time": "10:00"
 }
 ```
 
@@ -360,7 +360,7 @@ Run the test suite:
 php artisan test
 
 # Run specific test
-php artisan test --filter AppointmentTest
+php artisan test --filter BookingTest
 ```
 
 ---
@@ -386,7 +386,7 @@ Contributions are welcome! Please follow these steps:
 
 ## 🐛 Known Issues
 
-- Calendar view may be slow with 1000+ appointments (optimization needed)
+- Calendar view may be slow with 1000+ Bookings (optimization needed)
 - Email notifications not yet implemented
 - Mobile responsiveness needs improvement on some pages
 
@@ -394,7 +394,7 @@ Contributions are welcome! Please follow these steps:
 
 ## 🗺️ Roadmap
 
-- [ ] Email/SMS notifications for appointments
+- [ ] Email/SMS notifications for Bookings
 - [ ] Online payment integration
 - [ ] Telemedicine video consultation
 - [ ] Mobile application (React Native)
@@ -434,7 +434,7 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
 **This is a demonstration/portfolio project.**
 
-- Contains NO real patient data
+- Contains NO real Client data
 - NOT HIPAA compliant without additional security measures
 - NOT certified for production medical use
 - For educational and demonstration purposes ONLY
@@ -480,6 +480,6 @@ For support, email your.email@example.com or open an issue on GitHub.
 
 **Built with ❤️ using Laravel**
 
-[⬆ Back to Top](#-healthcare-appointment-management-system)
+[⬆ Back to Top](#-healthcare-Booking-management-system)
 
 </div>

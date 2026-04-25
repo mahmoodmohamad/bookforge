@@ -16,19 +16,19 @@ class City extends Model
         return $this->belongsTo(Country::class);
     }
 
-    public function patients()
+    public function clients()
     {
-        return $this->hasMany(Patient::class);
+        return $this->hasMany(Client::class);
     }
 
-    public function physicians()
+    public function providers()
     {
-        return $this->hasMany(Physician::class);
+        return $this->hasMany(Provider::class);
     }
 
     public function secretaries()
     {
-        return $this->hasMany(Secretary::class);
+        return $this->hasMany(Staff::class);
     }
 
     public function scopeSearch($query, string $search)

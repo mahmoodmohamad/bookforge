@@ -75,7 +75,7 @@
             color: #495057;
         }
         
-        .appointment-item {
+        .Booking-item {
             background: #007bff;
             color: white;
             padding: 4px 8px;
@@ -88,10 +88,10 @@
             text-overflow: ellipsis;
         }
         
-        .appointment-item:hover { background: #0056b3; }
+        .Booking-item:hover { background: #0056b3; }
         
-        .appointment-item.completed { background: #28a745; }
-        .appointment-item.cancelled { background: #dc3545; }
+        .Booking-item.completed { background: #28a745; }
+        .Booking-item.cancelled { background: #dc3545; }
         
         .filter-section {
             background: white;
@@ -368,14 +368,14 @@
     .role-badge.admin { border-color: #e53e3e; }
     .role-badge.admin.active { background: #e53e3e; border-color: #e53e3e; }
 
-    .role-badge.physician { border-color: #3182ce; }
-    .role-badge.physician.active { background: #3182ce; border-color: #3182ce; }
+    .role-badge.Provider { border-color: #3182ce; }
+    .role-badge.Provider.active { background: #3182ce; border-color: #3182ce; }
 
-    .role-badge.secretary { border-color: #38b2ac; }
+    .role-badge.Staff{ border-color: #38b2ac; }
     .role-badge.secretary.active { background: #38b2ac; border-color: #38b2ac; }
 
-    .role-badge.patient { border-color: #48bb78; }
-    .role-badge.patient.active { background: #48bb78; border-color: #48bb78; }
+    .role-badge.Client { border-color: #48bb78; }
+    .role-badge.Client.active { background: #48bb78; border-color: #48bb78; }
 
     /* Section Dividers */
     .section-divider {

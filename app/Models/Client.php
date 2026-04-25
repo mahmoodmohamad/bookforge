@@ -14,7 +14,7 @@ class Client extends Model
         'national_id',
         'phone',
         'city_id',
-        'secretary_id',
+        'staff_id',
 		'gender',
         'birth_date',
     ];
@@ -23,8 +23,8 @@ class Client extends Model
     {
         parent::boot();
 
-        static::deleting(function (self $patient) {
-            $patient->user()->delete();
+        static::deleting(function (self $client) {
+            $client->user()->delete();
         });
     }
 
@@ -38,25 +38,25 @@ class Client extends Model
         return $this->belongsTo(City::class);
     }
 
-    public function secretary()
+    public function staff()
     {
-        return $this->belongsTo(Secretary::class);
+        return $this->belongsTo(Staff::class);
     }
 
-    public function appointments()
+    public function bookings()
     {
-        return $this->hasMany(Appointment::class);
+        return $this->hasMany(Booking::class);
     }
 
    public function diagnoses()
 {
     return $this->hasManyThrough(
-        Diagnosis::class,
-        Appointment::class,
-        'patient_id',      // FK في appointments
-        'appointment_id',  // FK في diagnoses
-        'id',              // PK في patients
-        'id'               // PK في appointments
+        Note::class,
+        Booking::class,
+        'client_id',      // FK في bookings
+        'booking_id',  // FK في diagnoses
+        'id',              // PK في clients
+        'id'               // PK في bookings
     );
 }
 

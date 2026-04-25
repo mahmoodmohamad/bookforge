@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{User, Admin, Patient, Physician, Secretary, City};
+use App\Models\{User, Admin, Client, Provider, Staff, City};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
@@ -24,14 +24,14 @@ class UserManagementController extends Controller
                 case 'admin':
                     $query->admins();
                     break;
-                case 'physician':
-                    $query->physicians();
+                case 'provider':
+                    $query->providers();
                     break;
-                case 'secretary':
+                case 'staff':
                     $query->secretaries();
                     break;
-                case 'patient':
-                    $query->patients();
+                case 'client':
+                    $query->clients();
                     break;
             }
         }
@@ -64,11 +64,11 @@ class UserManagementController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
-            'role' => ['required', Rule::in(['admin', 'physician', 'secretary', 'patient'])],
-            'phone' => 'required_if:role,physician,secretary,patient',
-            'city_id' => 'required_if:role,physician,secretary,patient|exists:cities,id',
-            'specialization' => 'required_if:role,physician',
-            'national_id' => 'required_if:role,secretary,patient|unique:patients,national_id|unique:secretaries,national_id',
+            'role' => ['required', Rule::in(['admin', 'provider', 'staff', 'client'])],
+            'phone' => 'required_if:role,provider,staff,client',
+            'city_id' => 'required_if:role,provider,staff,client|exists:cities,id',
+            'specialization' => 'required_if:role,provider',
+            'national_id' => 'required_if:role,staff,client|unique:clients,national_id|unique:secretaries,national_id',
         ]);
 
         DB::beginTransaction();
@@ -87,8 +87,8 @@ class UserManagementController extends Controller
                     Admin::create(['user_id' => $user->id]);
                     break;
 
-                case 'physician':
-                    Physician::create([
+                case 'provider':
+                    Provider::create([
                         'user_id' => $user->id,
                         'specialization' => $request->specialization,
                         'phone' => $request->phone,
@@ -96,16 +96,16 @@ class UserManagementController extends Controller
                     ]);
                     break;
 
-                case 'secretary':
-                    Secretary::create([
+                case 'staff':
+                    Staff::create([
                         'user_id' => $user->id,
                         'phone' => $request->phone,
                         'city_id' => $request->city_id,
                     ]);
                     break;
 
-                case 'patient':
-                    Patient::create([
+                case 'client':
+                    Client::create([
                         'user_id' => $user->id,
                         'national_id' => $request->national_id,
                         'phone' => $request->phone,
@@ -131,7 +131,7 @@ class UserManagementController extends Controller
      */
     public function show(User $user)
     {
-        $user->load(['admin', 'physician', 'secretary', 'patient']);
+        $user->load(['admin', 'provider', 'staff', 'client']);
         
         return view('admin.users.show', compact('user'));
     }

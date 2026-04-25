@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{User, Patient, Physician, Secretary, Appointment, Diagnosis, City};
+use App\Models\{User, Client, Provider, Staff, Booking, Note, City};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -19,61 +19,61 @@ class AdminController extends Controller
     $stats = Cache::remember('admin.dashboard.stats', 300, function () {
         return [
             'total_users'          => User::count(),
-            'total_patients'       => Patient::count(),
-            'total_physicians'     => Physician::count(),
-            'total_secretaries'    => Secretary::count(),
-            'total_appointments'   => Appointment::count(),
-            'total_diagnoses'      => Diagnosis::count(),
-            'month_appointments'   => Appointment::whereMonth('created_at', now()->month)->count(),
-            'month_patients'       => Patient::whereMonth('created_at', now()->month)->count(),
-            'scheduled'            => Appointment::where('status', 'scheduled')->count(),
-            'completed'            => Appointment::where('status', 'completed')->count(),
-            'cancelled'            => Appointment::where('status', 'cancelled')->count(),
+            'total_clients'       => Client::count(),
+            'total_providers'     => Provider::count(),
+            'total_secretaries'    => Staff::count(),
+            'total_bookings'   => Booking::count(),
+            'total_diagnoses'      => Note::count(),
+            'month_bookings'   => Booking::whereMonth('created_at', now()->month)->count(),
+            'month_clients'       => Client::whereMonth('created_at', now()->month)->count(),
+            'scheduled'            => Booking::where('status', 'scheduled')->count(),
+            'completed'            => Booking::where('status', 'completed')->count(),
+            'cancelled'            => Booking::where('status', 'cancelled')->count(),
         ];
     });
 
-    // Today's appointments - مش هنكاش لأن بتتغير كتير
-    $stats['today_appointments'] = Appointment::whereDate('appointment_date', today())->count();
+    // Today's bookings - مش هنكاش لأن بتتغير كتير
+    $stats['today_bookings'] = Booking::whereDate('booking_date', today())->count();
 
-    $recentAppointments = Cache::remember('admin.dashboard.recent_appointments', 120, function () {
-        return Appointment::with(['patient.user', 'physician.user'])
+    $recentBookings = Cache::remember('admin.dashboard.recent_bookings', 120, function () {
+        return Booking::with(['client.user', 'provider.user'])
             ->latest()
             ->take(10)
             ->get();
     });
 
-    $recentPatients = Cache::remember('admin.dashboard.recent_patients', 120, function () {
-        return Patient::with('user')->latest()->take(5)->get();
+    $recentClients = Cache::remember('admin.dashboard.recent_clients', 120, function () {
+        return Client::with('user')->latest()->take(5)->get();
     });
 
-    $appointmentsByStatus = Cache::remember('admin.dashboard.appointments_by_status', 300, function () {
-        return Appointment::select('status', DB::raw('count(*) as count'))
+    $bookingsByStatus = Cache::remember('admin.dashboard.bookings_by_status', 300, function () {
+        return Booking::select('status', DB::raw('count(*) as count'))
             ->groupBy('status')
             ->get();
     });
 
     $monthlyData = Cache::remember('admin.dashboard.monthly_data', 3600, function () {
-        return Appointment::select(
-                DB::raw('DATE_FORMAT(appointment_date, "%Y-%m") as month'),
+        return Booking::select(
+                DB::raw('DATE_FORMAT(booking_date, "%Y-%m") as month'),
                 DB::raw('count(*) as count')
             )
-            ->where('appointment_date', '>=', now()->subMonths(6))
+            ->where('booking_date', '>=', now()->subMonths(6))
             ->groupBy('month')
             ->orderBy('month')
             ->get();
     });
 
-    $topPhysicians = Cache::remember('admin.dashboard.top_physicians', 3600, function () {
-        return Physician::withCount('appointments')
+    $topProviders = Cache::remember('admin.dashboard.top_providers', 3600, function () {
+        return Provider::withCount('bookings')
             ->with('user')
-            ->orderByDesc('appointments_count')
+            ->orderByDesc('bookings_count')
             ->take(5)
             ->get();
     });
 
     return view('admin.dashboard', compact(
-        'stats', 'recentAppointments', 'recentPatients',
-        'appointmentsByStatus', 'monthlyData', 'topPhysicians'
+        'stats', 'recentBookings', 'recentClients',
+        'bookingsByStatus', 'monthlyData', 'topProviders'
     ));
 }
 
@@ -85,28 +85,28 @@ class AdminController extends Controller
         // Detailed statistics
         $stats = [
             'users_by_role' => [
-                'patients' => Patient::count(),
-                'physicians' => Physician::count(),
-                'secretaries' => Secretary::count(),
+                'clients' => Client::count(),
+                'providers' => Provider::count(),
+                'secretaries' => Staff::count(),
                 'admins' => User::admins()->count(),
             ],
             
-            'appointments_by_month' => Appointment::select(
-                    DB::raw('DATE_FORMAT(appointment_date, "%Y-%m") as month'),
+            'bookings_by_month' => Booking::select(
+                    DB::raw('DATE_FORMAT(booking_date, "%Y-%m") as month'),
                     DB::raw('count(*) as count')
                 )
-                ->where('appointment_date', '>=', now()->subYear())
+                ->where('booking_date', '>=', now()->subYear())
                 ->groupBy('month')
                 ->orderBy('month')
                 ->get(),
             
-            'appointments_by_physician' => Physician::withCount('appointments')
+            'bookings_by_provider' => Provider::withCount('bookings')
                 ->with('user')
-                ->having('appointments_count', '>', 0)
-                ->orderByDesc('appointments_count')
+                ->having('bookings_count', '>', 0)
+                ->orderByDesc('bookings_count')
                 ->get(),
             
-            'cities_distribution' => City::withCount(['patients', 'physicians', 'secretaries'])
+            'cities_distribution' => City::withCount(['clients', 'providers', 'secretaries'])
                 ->get(),
         ];
 

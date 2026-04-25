@@ -9,11 +9,11 @@ use App\Models\{
     Admin,
     Country,
     City,
-    Secretary,
-    Physician,
-    Patient,
-    Appointment,
-    Diagnosis
+    Staff,
+    Provider,
+    Client,
+    Booking,
+    Note
 };
 
 class DatabaseSeeder extends Seeder
@@ -31,19 +31,19 @@ class DatabaseSeeder extends Seeder
         // 2️⃣ Users & Roles
         $this->seedAdmin();
         $this->seedSecretaries();
-        $this->seedPhysicians();
-        $this->seedPatients();
+        $this->seedProviders();
+        $this->seedClients();
 
-        // 3️⃣ Appointments & Diagnoses
-        $this->seedAppointments();
+        // 3️⃣ Bookings & Diagnoses
+        $this->seedBookings();
 
         $this->command->info('✅ Database seeded successfully!');
         $this->command->info('');
         $this->command->info('📧 Demo Accounts:');
         $this->command->info('   Admin:     admin@example.com / password');
-        $this->command->info('   Physician: alice@example.com / password');
-        $this->command->info('   Secretary: secretary1@example.com / password');
-        $this->command->info('   Patient:   jane@example.com / password');
+        $this->command->info('   Provider: alice@example.com / password');
+        $this->command->info('   Staff: staff1@example.com / password');
+        $this->command->info('   Client:   jane@example.com / password');
     }
 
     /**
@@ -107,17 +107,17 @@ class DatabaseSeeder extends Seeder
         $secretaries = [
             [
                 'name' => 'Sarah Johnson',
-                'email' => 'secretary1@example.com',
+                'email' => 'staff1@example.com',
                 'phone' => '555-0101',
             ],
             [
                 'name' => 'Emily Davis',
-                'email' => 'secretary2@example.com',
+                'email' => 'staff2@example.com',
                 'phone' => '555-0102',
             ],
             [
                 'name' => 'Michael Brown',
-                'email' => 'secretary3@example.com',
+                'email' => 'staff3@example.com',
                 'phone' => '555-0103',
             ],
         ];
@@ -130,7 +130,7 @@ class DatabaseSeeder extends Seeder
                 'activation' => true,
             ]);
 
-            Secretary::create([
+            Staff::create([
                 'user_id' => $user->id,
                 'phone' => $sec['phone'],
                 'city_id' => City::inRandomOrder()->first()->id,
@@ -141,13 +141,13 @@ class DatabaseSeeder extends Seeder
     }
 
     /**
-     * Seed physicians
+     * Seed providers
      */
-    private function seedPhysicians(): void
+    private function seedProviders(): void
     {
-        $this->command->info('👨‍⚕️ Seeding physicians...');
+        $this->command->info('👨‍⚕️ Seeding providers...');
 
-        $physicians = [
+        $providers = [
             ['name' => 'Dr. Alice Williams', 'email' => 'alice@example.com', 'specialization' => 'Cardiology', 'phone' => '555-1001'],
             ['name' => 'Dr. Robert Smith', 'email' => 'robert@example.com', 'specialization' => 'Neurology', 'phone' => '555-1002'],
             ['name' => 'Dr. Jennifer Martinez', 'email' => 'jennifer@example.com', 'specialization' => 'Pediatrics', 'phone' => '555-1003'],
@@ -158,7 +158,7 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Dr. Richard Wilson', 'email' => 'richard@example.com', 'specialization' => 'General Surgery', 'phone' => '555-1008'],
         ];
 
-        foreach ($physicians as $doc) {
+        foreach ($providers as $doc) {
             $user = User::create([
                 'name' => $doc['name'],
                 'email' => $doc['email'],
@@ -166,7 +166,7 @@ class DatabaseSeeder extends Seeder
                 'activation' => true,
             ]);
 
-            Physician::create([
+            Provider::create([
                 'user_id' => $user->id,
                 'specialization' => $doc['specialization'],
                 'phone' => $doc['phone'],
@@ -174,17 +174,17 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        $this->command->info('✓ Physicians created');
+        $this->command->info('✓ Providers created');
     }
 
     /**
-     * Seed patients
+     * Seed clients
      */
-    private function seedPatients(): void
+    private function seedClients(): void
     {
-        $this->command->info('🏥 Seeding patients...');
+        $this->command->info('🏥 Seeding clients...');
 
-        $patients = [
+        $clients = [
             ['name' => 'Jane Doe', 'email' => 'jane@example.com', 'phone' => '555-2001', 'national_id' => 'PAT001'],
             ['name' => 'John Smith', 'email' => 'john@example.com', 'phone' => '555-2002', 'national_id' => 'PAT002'],
             ['name' => 'Emma Wilson', 'email' => 'emma@example.com', 'phone' => '555-2003', 'national_id' => 'PAT003'],
@@ -202,9 +202,9 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Amelia Jackson', 'email' => 'amelia@example.com', 'phone' => '555-2015', 'national_id' => 'PAT015'],
         ];
 
-        $secretaries = Secretary::all();
+        $secretaries = Staff::all();
 
-        foreach ($patients as $pat) {
+        foreach ($clients as $pat) {
             $user = User::create([
                 'name' => $pat['name'],
                 'email' => $pat['email'],
@@ -212,50 +212,50 @@ class DatabaseSeeder extends Seeder
                 'activation' => true,
             ]);
 
-            Patient::create([
+            Client::create([
                 'user_id' => $user->id,
                 'phone' => $pat['phone'],
                 'national_id' => $pat['national_id'],
                 'city_id' => City::inRandomOrder()->first()->id,
-                'secretary_id' => $secretaries->random()->id,
+                'staff_id' => $secretaries->random()->id,
             ]);
         }
 
-        $this->command->info('✓ Patients created');
+        $this->command->info('✓ Clients created');
     }
 
     /**
-     * Seed appointments and diagnoses
+     * Seed bookings and diagnoses
      */
-    private function seedAppointments(): void
+    private function seedBookings(): void
     {
-        $this->command->info('📅 Seeding appointments...');
+        $this->command->info('📅 Seeding bookings...');
 
-        $patients = Patient::all();
-        $physicians = Physician::all();
-        $secretaries = Secretary::all();
+        $clients = Client::all();
+        $providers = Provider::all();
+        $secretaries = Staff::all();
 
-        $appointmentCount = 0;
-        $diagnosisCount = 0;
+        $bookingCount = 0;
+        $noteCount = 0;
 
-        foreach ($patients as $patient) {
-            // Each patient gets 2-4 appointments
-            $numAppointments = rand(2, 4);
+        foreach ($clients as $client) {
+            // Each client gets 2-4 bookings
+            $numBookings = rand(2, 4);
 
-            for ($i = 0; $i < $numAppointments; $i++) {
-                $physician = $physicians->random();
-                $secretary = $secretaries->random();
+            for ($i = 0; $i < $numBookings; $i++) {
+                $provider = $providers->random();
+                $staff = $secretaries->random();
 
-                // Mix of past, today, and future appointments
+                // Mix of past, today, and future bookings
                 $daysOffset = match($i) {
-                    0 => -rand(7, 30),    // Past appointment
+                    0 => -rand(7, 30),    // Past booking
                     1 => -rand(1, 6),     // Recent past
-                    2 => 0,               // Today (some patients)
+                    2 => 0,               // Today (some clients)
                     default => rand(1, 14) // Future
                 };
 
-                $appointmentDate = now()->addDays($daysOffset);
-                $appointmentTime = sprintf('%02d:00', rand(9, 16)); // 9 AM to 4 PM
+                $bookingDate = now()->addDays($daysOffset);
+                $bookingTime = sprintf('%02d:00', rand(9, 16)); // 9 AM to 4 PM
 
                 // Determine status
                 $status = match(true) {
@@ -266,109 +266,109 @@ class DatabaseSeeder extends Seeder
                     default => rand(0, 10) === 0 ? 'cancelled' : 'completed'
                 };
 
-                $appointment = Appointment::create([
-                    'patient_id' => $patient->id,
-                    'physician_id' => $physician->id,
-                    'secretary_id' => $secretary->id,
-                    'appointment_date' => $appointmentDate,
-                    'appointment_time' => $appointmentTime,
+                $booking = Booking::create([
+                    'client_id' => $client->id,
+                    'provider_id' => $provider->id,
+                    'staff_id' => $staff->id,
+                    'booking_date' => $bookingDate,
+                    'booking_time' => $bookingTime,
                     'status' => $status,
-                    'notes' => $this->getRandomAppointmentNote(),
+                    'notes' => $this->getRandomBookingNote(),
                 ]);
 
-                $appointmentCount++;
+                $bookingCount++;
 
-                // Add diagnosis for completed appointments (80% chance)
+                // Add note for completed bookings (80% chance)
                 if ($status === 'completed' && rand(1, 10) <= 8) {
-                    $diagnosisData = $this->getRandomDiagnosis();
+                    $noteData = $this->getRandomNote();
 
-                    Diagnosis::create([
-                        'appointment_id' => $appointment->id,
-                        'symptoms' => $diagnosisData['symptoms'],
-                        'diagnosis' => $diagnosisData['diagnosis'],
-                        'prescription' => $diagnosisData['prescription'],
-                        'notes' => $diagnosisData['notes'],
+                    Note::create([
+                        'booking_id' => $booking->id,
+                        'symptoms' => $noteData['symptoms'],
+                        'note' => $noteData['note'],
+                        'prescription' => $noteData['prescription'],
+                        'notes' => $noteData['notes'],
                     ]);
 
-                    $diagnosisCount++;
+                    $noteCount++;
                 }
             }
         }
 
-        $this->command->info("✓ Created {$appointmentCount} appointments");
-        $this->command->info("✓ Created {$diagnosisCount} diagnoses");
+        $this->command->info("✓ Created {$bookingCount} bookings");
+        $this->command->info("✓ Created {$noteCount} diagnoses");
     }
 
     /**
-     * Get random appointment notes
+     * Get random booking notes
      */
-    private function getRandomAppointmentNote(): string
+    private function getRandomBookingNote(): string
     {
         $notes = [
-            'Regular checkup appointment',
+            'Regular checkup booking',
             'Follow-up visit for previous condition',
-            'Patient requested urgent consultation',
+            'Client requested urgent consultation',
             'Annual health screening',
             'Post-treatment evaluation',
-            'New patient consultation',
+            'New client consultation',
             'Routine examination',
-            'Patient experiencing symptoms',
+            'Client experiencing symptoms',
         ];
 
         return $notes[array_rand($notes)];
     }
 
     /**
-     * Get random diagnosis data
+     * Get random note data
      */
-    private function getRandomDiagnosis(): array
+    private function getRandomNote(): array
     {
         $diagnoses = [
             [
-                'symptoms' => 'Patient reports persistent headache, fatigue, and mild fever for 3 days. No recent travel history. Denies nausea or vision changes.',
-                'diagnosis' => 'Upper respiratory tract infection (Common cold). Mild dehydration noted. No signs of bacterial infection.',
+                'symptoms' => 'Client reports persistent headache, fatigue, and mild fever for 3 days. No recent travel history. Denies nausea or vision changes.',
+                'note' => 'Upper respiratory tract infection (Common cold). Mild dehydration noted. No signs of bacterial infection.',
                 'prescription' => "1. Paracetamol 500mg - Take 1 tablet every 6 hours as needed for fever\n2. Increase fluid intake to at least 2 liters per day\n3. Rest for 2-3 days\n4. Vitamin C 1000mg daily for 5 days",
-                'notes' => 'Patient advised to return if fever persists beyond 3 days or if symptoms worsen. Avoid cold drinks and maintain proper rest.',
+                'notes' => 'Client advised to return if fever persists beyond 3 days or if symptoms worsen. Avoid cold drinks and maintain proper rest.',
             ],
             [
                 'symptoms' => 'Acute lower back pain for 2 days following heavy lifting. Pain radiates to right leg. No numbness or tingling. Difficulty bending forward.',
-                'diagnosis' => 'Acute lumbar muscle strain. No signs of herniated disc or nerve compression. Normal range of motion in legs.',
+                'note' => 'Acute lumbar muscle strain. No signs of herniated disc or nerve compression. Normal range of motion in legs.',
                 'prescription' => "1. Ibuprofen 400mg - Take 1 tablet three times daily with food for 5 days\n2. Apply hot compress to affected area 15-20 minutes, 3 times daily\n3. Bed rest for 48 hours\n4. Gentle stretching exercises after 2 days",
-                'notes' => 'Patient educated on proper lifting techniques. Advised to avoid heavy lifting for 2 weeks. Return if pain worsens or numbness develops.',
+                'notes' => 'Client educated on proper lifting techniques. Advised to avoid heavy lifting for 2 weeks. Return if pain worsens or numbness develops.',
             ],
             [
                 'symptoms' => 'Dry cough for 1 week, mild chest tightness, no fever. Shortness of breath with exertion. History of seasonal allergies.',
-                'diagnosis' => 'Allergic bronchitis likely triggered by seasonal allergens. Chest examination clear, no wheezing. Oxygen saturation 98%.',
+                'note' => 'Allergic bronchitis likely triggered by seasonal allergens. Chest examination clear, no wheezing. Oxygen saturation 98%.',
                 'prescription' => "1. Cetirizine 10mg - Once daily before bedtime for 7 days\n2. Dextromethorphan cough syrup - 10ml three times daily\n3. Steam inhalation twice daily\n4. Avoid known allergens and dusty environments",
                 'notes' => 'Follow-up in 1 week if symptoms persist. Consider allergy testing if recurrent episodes occur. Maintain good hydration.',
             ],
             [
                 'symptoms' => 'Severe sore throat, difficulty swallowing, fever 38.5°C. Enlarged tonsils with white patches. No cough or runny nose.',
-                'diagnosis' => 'Acute bacterial tonsillitis (Streptococcal pharyngitis suspected). Positive throat examination findings. Lymph nodes enlarged.',
+                'note' => 'Acute bacterial tonsillitis (Streptococcal pharyngitis suspected). Positive throat examination findings. Lymph nodes enlarged.',
                 'prescription' => "1. Amoxicillin 500mg - Take 1 capsule three times daily for 7 days (complete full course)\n2. Paracetamol 500mg for fever as needed\n3. Warm salt water gargles 4-5 times daily\n4. Throat lozenges as needed",
                 'notes' => 'Emphasized importance of completing antibiotic course. Soft diet recommended. Return if breathing difficulty develops. Expected improvement in 48-72 hours.',
             ],
             [
                 'symptoms' => 'Intermittent abdominal pain for 2 days, mainly upper abdomen. Bloating after meals. No vomiting or diarrhea. Stress at work mentioned.',
-                'diagnosis' => 'Functional dyspepsia (Stress-induced gastritis). No alarming symptoms. Abdomen soft on examination.',
+                'note' => 'Functional dyspepsia (Stress-induced gastritis). No alarming symptoms. Abdomen soft on examination.',
                 'prescription' => "1. Omeprazole 20mg - Once daily before breakfast for 14 days\n2. Avoid spicy and fatty foods\n3. Eat small frequent meals\n4. Stress management techniques recommended",
                 'notes' => 'Lifestyle modifications discussed. Return if symptoms worsen or if develops vomiting/blood in stool. Consider stress counseling.',
             ],
             [
                 'symptoms' => 'Skin rash on arms and legs for 5 days. Itching moderate. No recent new medications or foods. No fever or joint pain.',
-                'diagnosis' => 'Contact dermatitis (Allergic reaction suspected). Erythematous rash with mild scaling. No systemic involvement.',
+                'note' => 'Contact dermatitis (Allergic reaction suspected). Erythematous rash with mild scaling. No systemic involvement.',
                 'prescription' => "1. Cetirizine 10mg - Once daily for 7 days\n2. Hydrocortisone cream 1% - Apply thin layer twice daily for 5 days\n3. Moisturizer after bathing\n4. Avoid scratching and use loose cotton clothing",
                 'notes' => 'Advised to identify and avoid potential allergens. Keep skin moisturized. Return if spreading or worsening.',
             ],
             [
                 'symptoms' => 'Generalized joint pain and stiffness, worse in mornings. Fatigue and occasional low-grade fever. Duration 10 days.',
-                'diagnosis' => 'Viral arthralgia (Post-viral syndrome suspected). No joint swelling or redness. Symmetric involvement noted.',
+                'note' => 'Viral arthralgia (Post-viral syndrome suspected). No joint swelling or redness. Symmetric involvement noted.',
                 'prescription' => "1. Ibuprofen 400mg - Twice daily with food for 7 days\n2. Adequate rest and sleep\n3. Gentle exercises and stretching\n4. Multivitamin supplement",
                 'notes' => 'Blood tests ordered (CBC, ESR, CRP) if symptoms persist beyond 2 weeks. Adequate hydration advised. Follow-up in 2 weeks.',
             ],
             [
                 'symptoms' => 'Dizzy spells for 3 days, worse when standing quickly. No chest pain or palpitations. Reduced appetite and fluid intake.',
-                'diagnosis' => 'Orthostatic hypotension secondary to dehydration. Blood pressure 95/60 mmHg. No cardiac abnormalities detected.',
+                'note' => 'Orthostatic hypotension secondary to dehydration. Blood pressure 95/60 mmHg. No cardiac abnormalities detected.',
                 'prescription' => "1. Increase fluid intake to 2-3 liters daily\n2. Increase salt intake moderately\n3. Rise slowly from sitting/lying positions\n4. Small frequent meals",
                 'notes' => 'Blood pressure monitoring at home recommended. Return if fainting occurs or if symptoms persist after hydration improvement.',
             ],

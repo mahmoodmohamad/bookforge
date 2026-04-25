@@ -11,45 +11,45 @@ class Booking extends Model
     use HasFactory;
 
     protected $fillable = [
-        'patient_id',
-        'physician_id',
-        'secretary_id',
-        'appointment_date',
-        'appointment_time', // ✅ Add this
+        'client_id',
+        'provider_id',
+        'staff_id',
+        'booking_date',
+        'booking_time', // ✅ Add this
         'status',
         'notes'
     ];
 
     protected $casts = [
-        'appointment_date' => 'datetime'
+        'booking_date' => 'datetime'
     ];
 
-    public function provider()  // was: physician()
+    public function provider()  // was: provider()
 {
     return $this->belongsTo(Provider::class);
 }
 
-public function client()  // was: patient()
+public function client()  // was: client()
 {
     return $this->belongsTo(Client::class);
 }
 
-    public function secretary()
+    public function staff()
     {
-        return $this->belongsTo(Secretary::class);
+        return $this->belongsTo(Staff::class);
     }
 
-    public function diagnosis()
+    public function note()
     {
-        return $this->hasOne(Diagnosis::class);
+        return $this->hasOne(Note::class);
     }
 
     // ✅ Add this method
-    public static function isAvailable($physicianId, $date, $time)
+    public static function isAvailable($providerId, $date, $time)
     {
-        return !self::where('physician_id', $physicianId)
-            ->whereDate('appointment_date', $date)
-            ->where('appointment_time', $time)
+        return !self::where('provider_id', $providerId)
+            ->whereDate('booking_date', $date)
+            ->where('booking_time', $time)
             ->where('status', '!=', 'cancelled')
             ->exists();
     }
@@ -57,9 +57,9 @@ public function client()  // was: patient()
     // ✅ Helper to get full datetime
     public function getFullDateTimeAttribute()
     {
-        if ($this->appointment_time) {
-            return Carbon::parse($this->appointment_date->format('Y-m-d') . ' ' . $this->appointment_time);
+        if ($this->booking_time) {
+            return Carbon::parse($this->booking_date->format('Y-m-d') . ' ' . $this->booking_time);
         }
-        return $this->appointment_date;
+        return $this->booking_date;
     }
 }

@@ -10,42 +10,42 @@ class Note extends Model
     use HasFactory;
 
     protected $fillable = [
-        'appointment_id',  
+        'booking_id',  
         'symptoms',
-        'diagnosis',
+        'note',
         'prescription',
         'notes',
     ];
 
     // Relationships
-    public function appointment()
+    public function booking()
     {
-        return $this->belongsTo(Appointment::class);
+        return $this->belongsTo(Booking::class);
     }
 
-    // ✅ للوصول للـ patient عن طريق appointment
-    public function patient()
+    // ✅ للوصول للـ client عن طريق booking
+    public function client()
     {
         return $this->hasOneThrough(
-            Patient::class,
-            Appointment::class,
-            'id',           // FK في appointments
-            'id',           // FK في patients
-            'appointment_id', // Local key في diagnoses
-            'patient_id'     // Local key في appointments
+            Client::class,
+            Booking::class,
+            'id',           // FK في bookings
+            'id',           // FK في clients
+            'booking_id', // Local key في diagnoses
+            'client_id'     // Local key في bookings
         );
     }
 
-    // ✅ للوصول للـ physician عن طريق appointment
-    public function physician()
+    // ✅ للوصول للـ provider عن طريق booking
+    public function provider()
     {
         return $this->hasOneThrough(
-            Physician::class,
-            Appointment::class,
+            Provider::class,
+            Booking::class,
             'id',
             'id',
-            'appointment_id',
-            'physician_id'
+            'booking_id',
+            'provider_id'
         );
     }
 }

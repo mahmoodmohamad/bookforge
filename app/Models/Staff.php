@@ -19,8 +19,8 @@ class Staff extends Model
     {
         parent::boot();
 
-        static::deleting(function (self $secretary) {
-            $secretary->user()->delete();
+        static::deleting(function (self $staff) {
+            $staff->user()->delete();
         });
     }
 
@@ -34,14 +34,14 @@ class Staff extends Model
         return $this->belongsTo(City::class);
     }
 
-    public function patients()
+    public function clients()
     {
-        return $this->hasMany(Patient::class, 'secretary_id');
+        return $this->hasMany(Client::class, 'staff_id');
     }
 
-    public function appointments()
+    public function bookings()
     {
-        return $this->hasMany(Appointment::class, 'secretary_id');
+        return $this->hasMany(Booking::class, 'staff_id');
     }
 
     public function scopeSearch($query, string $search)

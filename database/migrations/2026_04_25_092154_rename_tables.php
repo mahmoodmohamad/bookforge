@@ -13,11 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('physicians', function (Blueprint $table) {
-            Schema::rename('physicians', 'providers');
-    Schema::rename('patients', 'clients');
+        Schema::table('providers', function (Blueprint $table) {
+            Schema::rename('providers', 'providers');
+    Schema::rename('clients', 'clients');
     Schema::rename('secretaries', 'staff');
-    Schema::rename('appointments', 'bookings');
+    Schema::rename('bookings', 'bookings');
     Schema::rename('diagnoses', 'notes');
         });
     }
@@ -29,7 +29,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('physicians', function (Blueprint $table) {
+        Schema::table('providers', function (Blueprint $table) {
             //
         });
     }

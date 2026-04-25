@@ -20,8 +20,8 @@ class Provider extends Model
     {
         parent::boot();
 
-        static::deleting(function (self $physician) {
-            $physician->user()->delete();
+        static::deleting(function (self $provider) {
+            $provider->user()->delete();
         });
     }
 
@@ -46,21 +46,21 @@ class Provider extends Model
         return $this->hasMany(Note::class);
     }
 
-    public function todayAppointments()
+    public function todayBookings()
     {
-        return $this->appointments()
-            ->whereDate('appointment_date', today())
-            ->orderBy('appointment_time')
+        return $this->bookings()
+            ->whereDate('booking_date', today())
+            ->orderBy('booking_time')
             ->get();
     }
 
-    public function upcomingAppointments()
+    public function upcomingBookings()
     {
-        return $this->appointments()
-            ->where('appointment_date', '>=', now())
+        return $this->bookings()
+            ->where('booking_date', '>=', now())
             ->where('status', 'scheduled')
-            ->orderBy('appointment_date')
-            ->orderBy('appointment_time')
+            ->orderBy('booking_date')
+            ->orderBy('booking_time')
             ->get();
     }
 

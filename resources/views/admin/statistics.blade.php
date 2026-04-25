@@ -153,9 +153,9 @@
 
     /* Role-specific colors */
     .admin-stat .stat-icon { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
-    .physician-stat .stat-icon { background: rgba(79, 70, 229, 0.1); color: var(--primary); }
-    .secretary-stat .stat-icon { background: rgba(6, 182, 212, 0.1); color: var(--info); }
-    .patient-stat .stat-icon { background: rgba(16, 185, 129, 0.1); color: var(--secondary); }
+    .provider-stat .stat-icon { background: rgba(79, 70, 229, 0.1); color: var(--primary); }
+    .staff-stat .stat-icon { background: rgba(6, 182, 212, 0.1); color: var(--info); }
+    .client-stat .stat-icon { background: rgba(16, 185, 129, 0.1); color: var(--secondary); }
 
     /* Chart Card */
     .chart-card {
@@ -188,7 +188,7 @@
         border-radius: 8px;
     }
 
-    /* Top Physicians */
+    /* Top Providers */
     .rank-card {
         background: white;
         border-radius: 16px;
@@ -230,22 +230,22 @@
         color: white;
     }
 
-    .physician-info {
+    .provider-info {
         flex: 1;
     }
 
-    .physician-name {
+    .provider-name {
         font-weight: 600;
         color: var(--dark);
         margin-bottom: 0.25rem;
     }
 
-    .physician-specialty {
+    .provider-specialty {
         font-size: 0.875rem;
         color: var(--gray);
     }
 
-    .appointment-count {
+    .booking-count {
         background: var(--primary-light);
         color: var(--primary);
         padding: 0.375rem 0.75rem;
@@ -408,13 +408,13 @@
             @php
                 $roleConfig = [
                     'admins' => ['icon' => 'fas fa-user-shield', 'class' => 'admin-stat', 'trend' => '+2'],
-                    'physicians' => ['icon' => 'fas fa-user-md', 'class' => 'physician-stat', 'trend' => '+12'],
-                    'secretaries' => ['icon' => 'fas fa-user-tie', 'class' => 'secretary-stat', 'trend' => '+5'],
-                    'patients' => ['icon' => 'fas fa-user-injured', 'class' => 'patient-stat', 'trend' => '+45']
+                    'providers' => ['icon' => 'fas fa-user-md', 'class' => 'provider-stat', 'trend' => '+12'],
+                    'secretaries' => ['icon' => 'fas fa-user-tie', 'class' => 'staff-stat', 'trend' => '+5'],
+                    'clients' => ['icon' => 'fas fa-user-injured', 'class' => 'client-stat', 'trend' => '+45']
                 ];
             @endphp
             
-            @foreach(['admins'=>'Admins','physicians'=>'Physicians','secretaries'=>'Secretaries','patients'=>'Patients'] as $key=>$label)
+            @foreach(['admins'=>'Admins','providers'=>'Providers','secretaries'=>'Secretaries','clients'=>'Clients'] as $key=>$label)
             <div class="col-xl-3 col-md-6 mb-4">
                 <div class="stat-card {{ $roleConfig[$key]['class'] }}">
                     <div class="stat-card-header">
@@ -435,46 +435,46 @@
             @endforeach
         </div>
 
-        <!-- Charts & Top Physicians -->
+        <!-- Charts & Top Providers -->
         <div class="row mb-4">
-            <!-- Appointments Chart -->
+            <!-- Bookings Chart -->
             <div class="col-xl-8 col-lg-7 mb-4 fade-in-up" style="animation-delay: 0.2s">
                 <div class="chart-card">
                     <div class="chart-card-header">
                         <div>
-                            <h3 class="chart-title">Appointments Overview</h3>
-                            <p class="text-muted mb-0">Monthly appointment trends</p>
+                            <h3 class="chart-title">Bookings Overview</h3>
+                            <p class="text-muted mb-0">Monthly booking trends</p>
                         </div>
                         <div class="chart-period">Last 12 Months</div>
                     </div>
                     <div class="chart-container" style="position: relative; height: 300px;">
-                        <canvas id="monthlyAppointments"></canvas>
+                        <canvas id="monthlyBookings"></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- Top Physicians -->
+            <!-- Top Providers -->
             <div class="col-xl-4 col-lg-5 mb-4 fade-in-up" style="animation-delay: 0.4s">
                 <div class="rank-card">
                     <div class="chart-card-header">
                         <div>
-                            <h3 class="chart-title">Top Physicians</h3>
+                            <h3 class="chart-title">Top Providers</h3>
                             <p class="text-muted mb-0">Most active doctors</p>
                         </div>
                         <div class="chart-period">This Month</div>
                     </div>
                     <div class="rank-list">
-                        @foreach($stats['appointments_by_physician']->take(5) as $index => $physician)
+                        @foreach($stats['bookings_by_provider']->take(5) as $index => $provider)
                         <div class="rank-item">
                             <div class="rank-number {{ $index < 3 ? 'top-3' : '' }}">
                                 {{ $index + 1 }}
                             </div>
-                            <div class="physician-info">
-                                <div class="physician-name">Dr. {{ $physician->user->name }}</div>
-                                <div class="physician-specialty">{{ $physician->specialization }}</div>
+                            <div class="provider-info">
+                                <div class="provider-name">Dr. {{ $provider->user->name }}</div>
+                                <div class="provider-specialty">{{ $provider->specialization }}</div>
                             </div>
-                            <div class="appointment-count">
-                                {{ $physician->appointments_count }}
+                            <div class="booking-count">
+                                {{ $provider->bookings_count }}
                             </div>
                         </div>
                         @endforeach
@@ -496,8 +496,8 @@
                             <thead>
                                 <tr>
                                     <th>City</th>
-                                    <th>Patients</th>
-                                    <th>Physicians</th>
+                                    <th>Clients</th>
+                                    <th>Providers</th>
                                     <th>Secretaries</th>
                                     <th>Total</th>
                                 </tr>
@@ -511,11 +511,11 @@
                                             <strong>{{ $city->name }}</strong>
                                         </div>
                                     </td>
-                                    <td>{{ number_format($city->patients_count) }}</td>
-                                    <td>{{ number_format($city->physicians_count) }}</td>
+                                    <td>{{ number_format($city->clients_count) }}</td>
+                                    <td>{{ number_format($city->providers_count) }}</td>
                                     <td>{{ number_format($city->secretaries_count) }}</td>
                                     <td class="total-cell">
-                                        {{ number_format($city->patients_count + $city->physicians_count + $city->secretaries_count) }}
+                                        {{ number_format($city->clients_count + $city->providers_count + $city->secretaries_count) }}
                                     </td>
                                 </tr>
                                 @endforeach
@@ -539,17 +539,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Chart initialization with enhanced options
 function initChart() {
-    const ctx = document.getElementById('monthlyAppointments').getContext('2d');
+    const ctx = document.getElementById('monthlyBookings').getContext('2d');
     
     // Prepare data
     const labels = [
-        @foreach($stats['appointments_by_month'] as $item)
+        @foreach($stats['bookings_by_month'] as $item)
         '{{ $item->month }}',
         @endforeach
     ];
     
     const data = [
-        @foreach($stats['appointments_by_month'] as $item)
+        @foreach($stats['bookings_by_month'] as $item)
         {{ $item->count }},
         @endforeach
     ];
@@ -564,7 +564,7 @@ function initChart() {
         data: {
             labels: labels,
             datasets: [{
-                label: 'Appointments',
+                label: 'Bookings',
                 data: data,
                 backgroundColor: gradient,
                 borderColor: 'rgba(79, 70, 229, 1)',
@@ -674,7 +674,7 @@ function refreshData() {
         
         // In a real app, you would fetch new data and update the chart
         // For now, we'll just re-initialize the chart
-        const chart = Chart.getChart('monthlyAppointments');
+        const chart = Chart.getChart('monthlyBookings');
         if (chart) {
             chart.destroy();
             initChart();

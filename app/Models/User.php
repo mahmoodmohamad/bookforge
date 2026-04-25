@@ -35,19 +35,19 @@ class User extends Authenticatable
         return $this->hasOne(Admin::class);
     }
 
-    public function provider(): HasOne  // was: physician()
+    public function provider(): HasOne  // was: provider()
 {
     return $this->hasOne(Provider::class);
 }
 
-public function client(): HasOne  // was: patient()
+public function client(): HasOne  // was: client()
 {
     return $this->hasOne(Client::class);
 }
 
-    public function secretary(): HasOne
+    public function staff(): HasOne
     {
-        return $this->hasOne(Secretary::class);
+        return $this->hasOne(Staff::class);
     }
 
    
@@ -59,17 +59,17 @@ public function client(): HasOne  // was: patient()
 
     public function isProvider(): bool
     {
-        return $this->hasRole('physician');
+        return $this->hasRole('provider');
     }
 
     public function isStaff(): bool
     {
-        return $this->hasRole('secretary');
+        return $this->hasRole('staff');
     }
 
     public function isClient(): bool
     {
-        return $this->hasRole('patient');
+        return $this->hasRole('client');
     }
 
     protected function hasRole(string $role): bool
@@ -87,9 +87,9 @@ public function client(): HasOne  // was: patient()
     public function getRoleName(): string
     {
         if ($this->isAdmin()) return 'Admin';
-        if ($this->isProvider()) return 'Physician';
-        if ($this->isStaff()) return 'Secretary';
-        if ($this->isClient()) return 'Patient';
+        if ($this->isProvider()) return 'Provider';
+        if ($this->isStaff()) return 'Staff';
+        if ($this->isClient()) return 'Client';
         
         return 'Unknown';
     }
@@ -97,9 +97,9 @@ public function client(): HasOne  // was: patient()
     public function getRoleAttribute()
     {
         return $this->admin 
-            ?? $this->physician 
-            ?? $this->secretary 
-            ?? $this->patient;
+            ?? $this->provider 
+            ?? $this->staff 
+            ?? $this->client;
     }
 
     public function isActive(): bool
@@ -123,19 +123,19 @@ public function client(): HasOne  // was: patient()
         return $query->where('activation', true);
     }
 
-    public function scopePhysicians($query)
+    public function scopeProviders($query)
     {
-        return $query->whereHas('physician');
+        return $query->whereHas('provider');
     }
 
     public function scopeSecretaries($query)
     {
-        return $query->whereHas('secretary');
+        return $query->whereHas('staff');
     }
 
-    public function scopePatients($query)
+    public function scopeClients($query)
     {
-        return $query->whereHas('patient');
+        return $query->whereHas('client');
     }
 
     public function scopeAdmins($query)

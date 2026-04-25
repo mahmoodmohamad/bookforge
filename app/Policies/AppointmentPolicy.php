@@ -2,11 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\Appointment;
+use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class AppointmentPolicy
+class BookingPolicy
 {
     use HandlesAuthorization;
 
@@ -21,58 +21,58 @@ class AppointmentPolicy
     }
 
     /**
-     * View list of appointments
+     * View list of bookings
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasRole('secretary')
-            || $user->hasRole('physician');
+        return $user->hasRole('staff')
+            || $user->hasRole('provider');
     }
 
     /**
-     * View a single appointment
+     * View a single booking
      */
-    public function view(User $user, Appointment $appointment): bool
+    public function view(User $user, Booking $booking): bool
     {
-        // Physician can view his own appointments
-        if ($user->hasRole('physician')) {
-            return $appointment->physician_id === $user->physician?->id;
+        // Provider can view his own bookings
+        if ($user->hasRole('provider')) {
+            return $booking->provider_id === $user->provider?->id;
         }
 
-        // Secretary can view appointments she created
-        if ($user->hasRole('secretary')) {
-            return $appointment->secretary_id === $user->secretary?->id;
+        // Staff can view bookings she created
+        if ($user->hasRole('staff')) {
+            return $booking->staff_id === $user->staff?->id;
         }
 
         return false;
     }
 
     /**
-     * Create appointment (secretary only)
+     * Create booking (staff only)
      */
     public function create(User $user): bool
     {
-        return $user->hasRole('secretary');
+        return $user->hasRole('staff');
     }
 
     /**
-     * Update appointment
-     * (Physician updates diagnosis / status)
+     * Update booking
+     * (Provider updates note / status)
      */
-    public function update(User $user, Appointment $appointment): bool
+    public function update(User $user, Booking $booking): bool
     {
-        return $user->hasRole('physician')
-            && $appointment->physician_id === $user->physician?->id
-            && $appointment->status !== 'cancelled';
+        return $user->hasRole('provider')
+            && $booking->provider_id === $user->provider?->id
+            && $booking->status !== 'cancelled';
     }
 
     /**
-     * Delete appointment (secretary only)
+     * Delete booking (staff only)
      */
-    public function delete(User $user, Appointment $appointment): bool
+    public function delete(User $user, Booking $booking): bool
     {
-        return $user->hasRole('secretary')
-            && $appointment->secretary_id === $user->secretary?->id
-            && $appointment->status !== 'completed';
+        return $user->hasRole('staff')
+            && $booking->staff_id === $user->staff?->id
+            && $booking->status !== 'completed';
     }
 }

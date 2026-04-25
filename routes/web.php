@@ -8,21 +8,21 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
-use App\Http\Controllers\Appointment\AppointmentController;
-use App\Http\Controllers\Patient\PatientController;
-use App\Http\Controllers\Secretary\DashboardController as SecretaryDashboard;
+use App\Http\Controllers\Booking\BookingController;
+use App\Http\Controllers\Client\ClientController;
+use App\Http\Controllers\Staff\DashboardController as StaffDashboard;
 use App\Http\Controllers\Admin\{AdminController, UserManagementController};
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\physician\DashboardController as PhysicianDashboardController;
-use App\Http\Controllers\Physician\PhysicianController;
+use App\Http\Controllers\provider\DashboardController as ProviderDashboardController;
+use App\Http\Controllers\Provider\ProviderController;
 
 
 Route::get('/', function () {
     if (auth()->check()) {
         $user = auth()->user();
         if ($user->isAdmin()) return redirect()->route('admin.dashboard');
-        if ($user->isPhysician()) return redirect()->route('physician.dashboard');
-        if ($user->isSecretary()) return redirect()->route('secretary.dashboard');
+        if ($user->isProvider()) return redirect()->route('provider.dashboard');
+        if ($user->isStaff()) return redirect()->route('staff.dashboard');
     }
     return redirect()->route('login');
 });
@@ -49,56 +49,56 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 });
 Route::get('/diagnoses', [AdminController::class, 'diagnoses'])->name('admin.diagnoses');
 
-Route::middleware(['auth', 'role:secretary'])->group(function () {
-    Route::get('/', SecretaryDashboard::class)->name('secretary.dashboard');
+Route::middleware(['auth', 'role:staff'])->group(function () {
+    Route::get('/', StaffDashboard::class)->name('staff.dashboard');
     
     // ✅ Calendar MUST come BEFORE generic routes
-    Route::get('/appointments/calendar', [AppointmentController::class, 'calendar'])
-        ->name('appointments.calendar');
-    Route::get('/appointments/by-date', [AppointmentController::class, 'getAppointments'])
-        ->name('appointments.by-date');
+    Route::get('/bookings/calendar', [BookingController::class, 'calendar'])
+        ->name('bookings.calendar');
+    Route::get('/bookings/by-date', [BookingController::class, 'getBookings'])
+        ->name('bookings.by-date');
     
-    // Then other appointment routes
-    Route::get('/appointments', [AppointmentController::class, 'index'])
-        ->name('appointments.index');
-    Route::get('/appointments/create', [AppointmentController::class, 'create'])
-        ->name('appointments.create');
-    Route::post('/appointments', [AppointmentController::class, 'store'])
-        ->name('appointments.store');
-    Route::get('/appointments/{appointment}', [AppointmentController::class, 'show'])
-        ->name('appointments.show');
-    Route::delete('/appointments/{appointment}', [AppointmentController::class, 'destroy'])
-        ->name('appointments.destroy');
+    // Then other booking routes
+    Route::get('/bookings', [BookingController::class, 'index'])
+        ->name('bookings.index');
+    Route::get('/bookings/create', [BookingController::class, 'create'])
+        ->name('bookings.create');
+    Route::post('/bookings', [BookingController::class, 'store'])
+        ->name('bookings.store');
+    Route::get('/bookings/{booking}', [BookingController::class, 'show'])
+        ->name('bookings.show');
+    Route::delete('/bookings/{booking}', [BookingController::class, 'destroy'])
+        ->name('bookings.destroy');
 	
-	Route::resource('patients', PatientController::class)->except(['destroy']);
-    Route::get('/patients/{patient}/medical-history', [PatientController::class, 'medicalHistory'])
-        ->name('patients.medical-history');
+	Route::resource('clients', ClientController::class)->except(['destroy']);
+    Route::get('/clients/{client}/medical-history', [ClientController::class, 'medicalHistory'])
+        ->name('clients.medical-history');
 });
 
 Route::middleware(['auth', 'role:provider'])->prefix('provider')->name('provider.')->group(function () {
     // Dashboard
-    Route::get('/dashboard', [PhysicianDashboardController::class, 'dashboard'])
+    Route::get('/dashboard', [ProviderDashboardController::class, 'dashboard'])
         ->name('dashboard');
     
-    // Appointments
-    Route::get('/appointments', [PhysicianController::class, 'appointments'])
-        ->name('appointments.index');
-    Route::get('/appointments/{appointment}', [PhysicianController::class, 'showAppointment'])
-        ->name('appointments.show');
+    // Bookings
+    Route::get('/bookings', [ProviderController::class, 'bookings'])
+        ->name('bookings.index');
+    Route::get('/bookings/{booking}', [ProviderController::class, 'showBooking'])
+        ->name('bookings.show');
     
-    // Diagnosis
-    Route::get('/appointments/{appointment}/diagnosis/create', [PhysicianController::class, 'createDiagnosis'])
-        ->name('diagnosis.create');
-    Route::post('/appointments/{appointment}/diagnosis', [PhysicianController::class, 'storeDiagnosis'])
-        ->name('diagnosis.store');
-    Route::get('/appointments/{appointment}/diagnosis/edit', [PhysicianController::class, 'editDiagnosis'])
-        ->name('diagnosis.edit');
-    Route::put('/appointments/{appointment}/diagnosis', [PhysicianController::class, 'updateDiagnosis'])
-        ->name('diagnosis.update');
+    // Note
+    Route::get('/bookings/{booking}/note/create', [ProviderController::class, 'createNote'])
+        ->name('note.create');
+    Route::post('/bookings/{booking}/note', [ProviderController::class, 'storeNote'])
+        ->name('note.store');
+    Route::get('/bookings/{booking}/note/edit', [ProviderController::class, 'editNote'])
+        ->name('note.edit');
+    Route::put('/bookings/{booking}/note', [ProviderController::class, 'updateNote'])
+        ->name('note.update');
     
-    // Patient History
-    Route::get('/patients/{patient}/history', [PhysicianController::class, 'patientHistory'])
-        ->name('patients.history');
+    // Client History
+    Route::get('/clients/{client}/history', [ProviderController::class, 'clientHistory'])
+        ->name('clients.history');
 });
 // clear routes
 

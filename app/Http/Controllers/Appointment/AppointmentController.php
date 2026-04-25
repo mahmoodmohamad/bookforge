@@ -1,18 +1,18 @@
 <?php
 
-namespace App\Http\Controllers\Appointment;
+namespace App\Http\Controllers\Booking;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\{Appointment, Physician, Patient};
+use App\Models\{Booking, Provider, Client};
 use Carbon\Carbon;
 
-class AppointmentController extends Controller
+class BookingController extends Controller
 {
-    // List all appointments
+    // List all bookings
     public function index(Request $request)
     {
-        $query = Appointment::with(['patient.user', 'physician.user', 'secretary.user']);
+        $query = Booking::with(['client.user', 'provider.user', 'staff.user']);
 
         // Filter by status
         if ($status = $request->status) {
@@ -21,78 +21,78 @@ class AppointmentController extends Controller
 
         // Filter by date
         if ($date = $request->date) {
-            $query->whereDate('appointment_date', $date);
+            $query->whereDate('booking_date', $date);
         }
 
-        $appointments = $query->latest('appointment_date')->paginate(15);
+        $bookings = $query->latest('booking_date')->paginate(15);
 
-        return view('appointments.index', compact('appointments'));
+        return view('bookings.index', compact('bookings'));
     }
 
     // Show create form
     public function create()
     {
-        $physicians = Physician::with('user')->get();
-        $patients = Patient::with('user')->get();
+        $providers = Provider::with('user')->get();
+        $clients = Client::with('user')->get();
         
-        return view('appointments.create', compact('physicians', 'patients'));
+        return view('bookings.create', compact('providers', 'clients'));
     }
 
-    // Store appointment
+    // Store booking
     public function store(Request $request)
     {
         $request->validate([
-            'patient_id' => 'required|exists:patients,id',
-            'physician_id' => 'required|exists:physicians,id',
-            'appointment_date' => 'required|date|after_or_equal:today',
-            'appointment_time' => 'required|date_format:H:i',
+            'client_id' => 'required|exists:clients,id',
+            'provider_id' => 'required|exists:providers,id',
+            'booking_date' => 'required|date|after_or_equal:today',
+            'booking_time' => 'required|date_format:H:i',
         ]);
 
         // Check availability
-        $available = Appointment::isAvailable(
-            $request->physician_id,
-            $request->appointment_date,
-            $request->appointment_time
+        $available = Booking::isAvailable(
+            $request->provider_id,
+            $request->booking_date,
+            $request->booking_time
         );
 
         if (!$available) {
             return back()
-                ->withErrors(['appointment_time' => 'This time slot is already booked.'])
+                ->withErrors(['booking_time' => 'This time slot is already booked.'])
                 ->withInput();
         }
 
-        // Combine date and time into appointment_date
-        $appointmentDateTime = Carbon::parse($request->appointment_date . ' ' . $request->appointment_time);
+        // Combine date and time into booking_date
+        $bookingDateTime = Carbon::parse($request->booking_date . ' ' . $request->booking_time);
 
-        Appointment::create([
-            'patient_id' => $request->patient_id,
-            'physician_id' => $request->physician_id,
-            'secretary_id' => auth()->user()->secretary->id ?? null,
-            'appointment_date' => $appointmentDateTime,
-            'appointment_time' => $request->appointment_time,
+        Booking::create([
+            'client_id' => $request->client_id,
+            'provider_id' => $request->provider_id,
+            'staff_id' => auth()->user()->staff->id ?? null,
+            'booking_date' => $bookingDateTime,
+            'booking_time' => $request->booking_time,
             'status' => 'scheduled',
             'notes' => $request->notes,
         ]);
 
-        return redirect()->route('appointments.index')
-            ->with('success', 'Appointment booked successfully!');
+        return redirect()->route('bookings.index')
+            ->with('success', 'Booking booked successfully!');
     }
 
-    // Show single appointment
-    public function show(Appointment $appointment)
+    // Show single booking
+    public function show(Booking $booking)
     {
-        $appointment->load(['patient.user', 'physician.user', 'secretary.user', 'diagnosis']);
+        $booking->load(['client.user', 'provider.user', 'staff.user', 'note']);
         
-        return view('appointments.show', compact('appointment'));
+        return view('bookings.show', compact('booking'));
     }
 
-    // Cancel appointment
-    public function destroy(Appointment $appointment)
+    // Cancel booking
+    public function destroy(Booking $booking)
     {
-        $appointment->update(['status' => 'cancelled']);
+        $booking->update(['status' => 'cancelled']);
         
-        return redirect()->route('appointments.index')
-            ->with('success', 'Appointment cancelled successfully!');
+        return redirect()->route('bookings.index')
+            ->with('success', 'Booking cancelled successfully!');
     }
 
     // ✅ Calendar view - Fixed method name
@@ -105,48 +105,48 @@ class AppointmentController extends Controller
         $startDate = $date->copy()->startOfMonth()->startOfWeek();
         $endDate = $date->copy()->endOfMonth()->endOfWeek();
         
-        // Get appointments for this month
-        $appointmentsQuery = Appointment::with(['patient.user', 'physician.user'])
-            ->whereBetween('appointment_date', [$startDate, $endDate]);
+        // Get bookings for this month
+        $bookingsQuery = Booking::with(['client.user', 'provider.user'])
+            ->whereBetween('booking_date', [$startDate, $endDate]);
 
-        // Filter by physician if requested
-        if ($physicianId = $request->get('physician_id')) {
-            $appointmentsQuery->where('physician_id', $physicianId);
+        // Filter by provider if requested
+        if ($providerId = $request->get('provider_id')) {
+            $bookingsQuery->where('provider_id', $providerId);
         }
 
-        $appointments = $appointmentsQuery->get()
-            ->groupBy(function($appointment) {
-                return $appointment->appointment_date->format('Y-m-d');
+        $bookings = $bookingsQuery->get()
+            ->groupBy(function($booking) {
+                return $booking->booking_date->format('Y-m-d');
             });
         
-        // Get physicians for filter
-        $physicians = Physician::with('user')->get();
+        // Get providers for filter
+        $providers = Provider::with('user')->get();
         
-        return view('appointments.calendar', compact('appointments', 'date', 'physicians'));
+        return view('bookings.calendar', compact('bookings', 'date', 'providers'));
     }
     
-    // Get appointments by date (for AJAX)
-    public function getAppointments(Request $request)
+    // Get bookings by date (for AJAX)
+    public function getBookings(Request $request)
     {
         $date = $request->get('date');
-        $physicianId = $request->get('physician_id');
+        $providerId = $request->get('provider_id');
         
-        $query = Appointment::with(['patient.user', 'physician.user'])
-            ->whereDate('appointment_date', $date);
+        $query = Booking::with(['client.user', 'provider.user'])
+            ->whereDate('booking_date', $date);
         
-        if ($physicianId) {
-            $query->where('physician_id', $physicianId);
+        if ($providerId) {
+            $query->where('provider_id', $providerId);
         }
         
-        $appointments = $query->orderBy('appointment_time')->get();
+        $bookings = $query->orderBy('booking_time')->get();
         
-        return response()->json($appointments);
+        return response()->json($bookings);
     }
 
     // ✅ NEW: Get available time slots
     public function getAvailableSlots(Request $request)
     {
-        $physicianId = $request->physician_id;
+        $providerId = $request->provider_id;
         $date = $request->date;
 
         // Define working hours (you can move this to config or database)
@@ -156,10 +156,10 @@ class AppointmentController extends Controller
         ];
 
         // Get booked slots
-        $bookedSlots = Appointment::where('physician_id', $physicianId)
-            ->whereDate('appointment_date', $date)
+        $bookedSlots = Booking::where('provider_id', $providerId)
+            ->whereDate('booking_date', $date)
             ->where('status', '!=', 'cancelled')
-            ->pluck('appointment_time')
+            ->pluck('booking_time')
             ->toArray();
 
         // Generate available slots

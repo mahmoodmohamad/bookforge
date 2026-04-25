@@ -24,21 +24,21 @@ class Clinic extends Model
 
     public function physicains(): BelongsToMany
     {
-        return $this->belongsToMany(Physicain::class, 'clinic_physicians', 'clinic_id', 'physicain_id')->withTimestamps();;
+        return $this->belongsToMany(Physicain::class, 'clinic_providers', 'clinic_id', 'physicain_id')->withTimestamps();;
     }
-    public function patients()
+    public function clients()
     {
 
-        return $this->hasMany(Patient::class);
+        return $this->hasMany(Client::class);
     }
 
-    public function patient(): BelongsToMany
+    public function client(): BelongsToMany
     {
 
-        return $this->belongsToMany(Patient::class, 'patient_clinics', 'clinic_id', 'patient_id')->withTimestamps();
+        return $this->belongsToMany(Client::class, 'client_clinics', 'clinic_id', 'client_id')->withTimestamps();
     }
-    public function patientClinics()
+    public function clientClinics()
     {
-        return $this->hasMany(PatientClinic::class);
+        return $this->hasMany(ClientClinic::class);
     }
 }

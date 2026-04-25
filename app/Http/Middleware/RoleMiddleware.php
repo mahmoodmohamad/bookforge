@@ -24,9 +24,9 @@ class RoleMiddleware
         // Check role
         $check = match($role) {
     'admin'    => $user->isAdmin(),
-    'provider' => $user->isProvider(),  // was: physician
-    'staff'    => $user->isStaff(),     // was: secretary
-    'client'   => $user->isClient(),    // was: patient
+    'provider' => $user->isProvider(),  // was: provider
+    'staff'    => $user->isStaff(),     // was: staff
+    'client'   => $user->isClient(),    // was: client
     default    => false
 };
 

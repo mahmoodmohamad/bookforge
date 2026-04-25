@@ -43,9 +43,9 @@
                     <select name="role" class="form-select">
                         <option value="">All Roles</option>
                         <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
-                        <option value="physician" {{ request('role') == 'physician' ? 'selected' : '' }}>Physician</option>
-                        <option value="secretary" {{ request('role') == 'secretary' ? 'selected' : '' }}>Secretary</option>
-                        <option value="patient" {{ request('role') == 'patient' ? 'selected' : '' }}>Patient</option>
+                        <option value="provider" {{ request('role') == 'provider' ? 'selected' : '' }}>Provider</option>
+                        <option value="staff" {{ request('role') == 'staff' ? 'selected' : '' }}>Staff</option>
+                        <option value="client" {{ request('role') == 'client' ? 'selected' : '' }}>Client</option>
                     </select>
                 </div>
                 <div class="col-md-2">
@@ -89,9 +89,9 @@
                                     @php
                                         $roleBadge = [
                                             'Admin' => 'danger',
-                                            'Physician' => 'primary',
-                                            'Secretary' => 'info',
-                                            'Patient' => 'success',
+                                            'Provider' => 'primary',
+                                            'Staff' => 'info',
+                                            'Client' => 'success',
                                         ];
                                         $role = $user->getRoleName();
                                         $badge = $roleBadge[$role] ?? 'secondary';

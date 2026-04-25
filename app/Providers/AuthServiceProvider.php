@@ -16,7 +16,7 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         // 'App\Models\Model' => 'App\Policies\ModelPolicy',
-         \App\Models\Appointment::class => \App\Policies\AppointmentPolicy::class,
+         \App\Models\Booking::class => \App\Policies\BookingPolicy::class,
     ];
 
     /**
@@ -29,8 +29,8 @@ class AuthServiceProvider extends ServiceProvider
         $this->registerPolicies();
 
 
-        Auth::viaRequest('patient', function (Request $request) {
-            return ($request->user() && $request->user()->isPatient()) ?
+        Auth::viaRequest('client', function (Request $request) {
+            return ($request->user() && $request->user()->isClient()) ?
                 $request->user() : null;
         });
 
@@ -46,8 +46,8 @@ class AuthServiceProvider extends ServiceProvider
             return ($request->user() && $request->user()->isLabSpecialist()) ?
                 $request->user() : null;
         });
-        Auth::viaRequest('secretary', function (Request $request) {
-            return ($request->user() && $request->user()->isSecretary()) ?
+        Auth::viaRequest('staff', function (Request $request) {
+            return ($request->user() && $request->user()->isStaff()) ?
                 $request->user() : null;
         });
 

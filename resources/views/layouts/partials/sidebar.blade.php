@@ -78,21 +78,21 @@
                 </li>
             @endif
 
-            {{-- PHYSICIAN SIDEBAR --}}
-            @if(auth()->user()->isPhysician())
+            {{-- Provider SIDEBAR --}}
+            @if(auth()->user()->isProvider())
                 <!-- Dashboard -->
-                <li class="menu-item {{ request()->routeIs('physician.dashboard') ? 'active' : '' }}">
-                    <a href="{{ route('physician.dashboard') }}" class="menu-link">
+                <li class="menu-item {{ request()->routeIs('provider.dashboard') ? 'active' : '' }}">
+                    <a href="{{ route('provider.dashboard') }}" class="menu-link">
                         <i class="menu-icon icon-base ri-dashboard-line"></i>
                         <div>Dashboard</div>
                     </a>
                 </li>
 
-                <!-- Appointments -->
-                <li class="menu-item {{ request()->routeIs('physician.appointments.*') ? 'active' : '' }}">
-                    <a href="{{ route('physician.appointments.index') }}" class="menu-link">
+                <!-- Bookings -->
+                <li class="menu-item {{ request()->routeIs('provider.bookings.*') ? 'active' : '' }}">
+                    <a href="{{ route('provider.bookings.index') }}" class="menu-link">
                         <i class="menu-icon icon-base ri-calendar-check-line"></i>
-                        <div>My Appointments</div>
+                        <div>My Bookings</div>
                     </a>
                 </li>
 
@@ -110,55 +110,55 @@
                 </li>
             @endif
 
-            {{-- SECRETARY SIDEBAR --}}
-            @if(auth()->user()->isSecretary())
+            {{-- StaffSIDEBAR --}}
+            @if(auth()->user()->isStaff())
                 <!-- Dashboard -->
-                <li class="menu-item {{ request()->routeIs('secretary.dashboard') ? 'active' : '' }}">
-                    <a href="{{ route('secretary.dashboard') }}" class="menu-link">
+                <li class="menu-item {{ request()->routeIs('staff.dashboard') ? 'active' : '' }}">
+                    <a href="{{ route('staff.dashboard') }}" class="menu-link">
                         <i class="menu-icon icon-base ri-dashboard-line"></i>
                         <div>Dashboard</div>
                     </a>
                 </li>
 
-                <!-- Patients -->
-                <li class="menu-item {{ request()->routeIs('patients.*') ? 'active open' : '' }}">
+                <!-- Clients -->
+                <li class="menu-item {{ request()->routeIs('clients.*') ? 'active open' : '' }}">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
                         <i class="menu-icon icon-base ri-user-heart-line"></i>
-                        <div>Patients</div>
+                        <div>Clients</div>
                     </a>
                     <ul class="menu-sub">
-                        <li class="menu-item {{ request()->routeIs('patients.index') ? 'active' : '' }}">
-                            <a href="{{ route('patients.index') }}" class="menu-link">
-                                <div>All Patients</div>
+                        <li class="menu-item {{ request()->routeIs('clients.index') ? 'active' : '' }}">
+                            <a href="{{ route('clients.index') }}" class="menu-link">
+                                <div>All Clients</div>
                             </a>
                         </li>
-                        <li class="menu-item {{ request()->routeIs('patients.create') ? 'active' : '' }}">
-                            <a href="{{ route('patients.create') }}" class="menu-link">
-                                <div>Register New Patient</div>
+                        <li class="menu-item {{ request()->routeIs('clients.create') ? 'active' : '' }}">
+                            <a href="{{ route('clients.create') }}" class="menu-link">
+                                <div>Register New Client</div>
                             </a>
                         </li>
                     </ul>
                 </li>
 
-                <!-- Appointments -->
-                <li class="menu-item {{ request()->routeIs('appointments.*') ? 'active open' : '' }}">
+                <!-- Bookings -->
+                <li class="menu-item {{ request()->routeIs('bookings.*') ? 'active open' : '' }}">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
                         <i class="menu-icon icon-base ri-calendar-line"></i>
-                        <div>Appointments</div>
+                        <div>Bookings</div>
                     </a>
                     <ul class="menu-sub">
-                        <li class="menu-item {{ request()->routeIs('appointments.index') ? 'active' : '' }}">
-                            <a href="{{ route('appointments.index') }}" class="menu-link">
-                                <div>All Appointments</div>
+                        <li class="menu-item {{ request()->routeIs('bookings.index') ? 'active' : '' }}">
+                            <a href="{{ route('bookings.index') }}" class="menu-link">
+                                <div>All Bookings</div>
                             </a>
                         </li>
-                        <li class="menu-item {{ request()->routeIs('appointments.create') ? 'active' : '' }}">
-                            <a href="{{ route('appointments.create') }}" class="menu-link">
-                                <div>Book Appointment</div>
+                        <li class="menu-item {{ request()->routeIs('bookings.create') ? 'active' : '' }}">
+                            <a href="{{ route('bookings.create') }}" class="menu-link">
+                                <div>Book Booking</div>
                             </a>
                         </li>
-                        <li class="menu-item {{ request()->routeIs('appointments.calendar') ? 'active' : '' }}">
-                            <a href="{{ route('appointments.calendar') }}" class="menu-link">
+                        <li class="menu-item {{ request()->routeIs('bookings.calendar') ? 'active' : '' }}">
+                            <a href="{{ route('bookings.calendar') }}" class="menu-link">
                                 <div>Calendar View</div>
                             </a>
                         </li>
@@ -179,21 +179,21 @@
                 </li>
             @endif
 
-            {{-- PATIENT SIDEBAR --}}
-            @if(auth()->user()->isPatient())
+            {{-- Client SIDEBAR --}}
+            @if(auth()->user()->isClient())
                 <!-- Dashboard -->
-                <li class="menu-item {{ request()->routeIs('patient.dashboard') ? 'active' : '' }}">
+                <li class="menu-item {{ request()->routeIs('client.dashboard') ? 'active' : '' }}">
                     <a href="#" class="menu-link">
                         <i class="menu-icon icon-base ri-dashboard-line"></i>
                         <div>Dashboard</div>
                     </a>
                 </li>
 
-                <!-- My Appointments -->
+                <!-- My Bookings -->
                 <li class="menu-item">
                     <a href="#" class="menu-link">
                         <i class="menu-icon icon-base ri-calendar-line"></i>
-                        <div>My Appointments</div>
+                        <div>My Bookings</div>
                     </a>
                 </li>
 
