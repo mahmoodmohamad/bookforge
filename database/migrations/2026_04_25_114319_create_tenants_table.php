@@ -13,16 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('providers', function (Blueprint $table) {
+        Schema::create('tenants', function (Blueprint $table) {
             $table->id();
-    $table->foreignId('user_id')->constrained()->onDelete('cascade');
-    $table->string('specialization'); 
-    $table->string('phone');
-    $table->foreignId('city_id')->constrained()->onDelete('cascade');
-    $table->foreignId('tenant_id')
-          ->after('id')
-          ->constrained()
-          ->onDelete('cascade');
+            $table->string('name');
+    $table->string('slug')->unique();  // used in URL
+    $table->string('business_type')->default('healthcare');
+    $table->json('config')->nullable(); // labels, colors, features
+    $table->boolean('is_active')->default(true);
     $table->timestamps();
         });
     }
@@ -34,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('providers');
+        Schema::dropIfExists('tenants');
     }
 };

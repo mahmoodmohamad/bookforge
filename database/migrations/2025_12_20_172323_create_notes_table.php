@@ -21,6 +21,10 @@ return new class extends Migration
     $table->text('description')->nullable();
     $table->text('prescription')->nullable();
     $table->text('notes')->nullable();
+     $table->foreignId('tenant_id')
+          ->after('id')
+          ->constrained()
+          ->onDelete('cascade');
     $table->timestamps();
         });
     }
