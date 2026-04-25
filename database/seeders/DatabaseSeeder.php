@@ -4,376 +4,516 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use App\Models\{
-    User,
-    Admin,
-    Country,
-    City,
-    Staff,
-    Provider,
-    Client,
-    Booking,
-    Note
-};
+use Illuminate\Support\Facades\DB;
+use App\Models\User;
+use App\Models\Admin;
+use App\Models\Tenant;
+use App\Models\Country;
+use App\Models\City;
+use App\Models\Staff;
+use App\Models\Provider;
+use App\Models\Client;
+use App\Models\Booking;
+use App\Models\Note;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
+    // Tenants will be stored here so other methods can reference them
+    private array $tenants = [];
+
     public function run(): void
     {
+        $this->command->info('');
         $this->command->info('🌱 Starting database seeding...');
+        $this->command->info('');
 
-        // 1️⃣ Countries & Cities
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
+        $this->cleanDatabase();
         $this->seedLocations();
-
-        // 2️⃣ Users & Roles
+        $this->seedTenants();    // ← must come before users
         $this->seedAdmin();
-        $this->seedSecretaries();
+        $this->seedStaff();
         $this->seedProviders();
         $this->seedClients();
-
-        // 3️⃣ Bookings & Diagnoses
         $this->seedBookings();
 
-        $this->command->info('✅ Database seeded successfully!');
-        $this->command->info('');
-        $this->command->info('📧 Demo Accounts:');
-        $this->command->info('   Admin:     admin@example.com / password');
-        $this->command->info('   Provider: alice@example.com / password');
-        $this->command->info('   Staff: staff1@example.com / password');
-        $this->command->info('   Client:   jane@example.com / password');
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+        $this->printSummary();
     }
 
-    /**
-     * Seed countries and cities
-     */
+    // =========================================================
+    //  CLEAN
+    // =========================================================
+
+    private function cleanDatabase(): void
+    {
+        $this->command->info('🧹 Cleaning old data...');
+
+        Note::truncate();
+        Booking::truncate();
+        Client::truncate();
+        Provider::truncate();
+        Staff::truncate();
+        Admin::truncate();
+        User::truncate();
+        Tenant::truncate();     // ← add this
+        City::truncate();
+        Country::truncate();
+
+        $this->command->info('✓ Database cleaned');
+    }
+
+    // =========================================================
+    //  LOCATIONS
+    // =========================================================
+
     private function seedLocations(): void
     {
         $this->command->info('📍 Seeding locations...');
 
-        $usa = Country::create(['name' => 'United States']);
-        $egypt = Country::create(['name' => 'Egypt']);
-        $uk = Country::create(['name' => 'United Kingdom']);
+        $locations = [
+            'United States'  => ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix'],
+            'Egypt'          => ['Cairo', 'Alexandria', 'Giza', 'Luxor', 'Aswan'],
+            'United Kingdom' => ['London', 'Manchester', 'Birmingham', 'Leeds', 'Glasgow'],
+            'Saudi Arabia'   => ['Riyadh', 'Jeddah', 'Dammam', 'Mecca', 'Medina'],
+            'UAE'            => ['Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman', 'Al Ain'],
+        ];
 
-        // USA Cities
-        $usaCities = ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix'];
-        foreach ($usaCities as $cityName) {
-            City::create(['name' => $cityName, 'country_id' => $usa->id]);
+        foreach ($locations as $countryName => $cities) {
+            $country = Country::create(['name' => $countryName]);
+            foreach ($cities as $cityName) {
+                City::create(['name' => $cityName, 'country_id' => $country->id]);
+            }
         }
 
-        // Egypt Cities
-        $egyptCities = ['Cairo', 'Alexandria', 'Giza', 'Luxor', 'Aswan'];
-        foreach ($egyptCities as $cityName) {
-            City::create(['name' => $cityName, 'country_id' => $egypt->id]);
-        }
-
-        // UK Cities
-        $ukCities = ['London', 'Manchester', 'Birmingham', 'Leeds', 'Glasgow'];
-        foreach ($ukCities as $cityName) {
-            City::create(['name' => $cityName, 'country_id' => $uk->id]);
-        }
-
-        $this->command->info('✓ Locations seeded');
+        $this->command->info('✓ ' . Country::count() . ' countries, ' . City::count() . ' cities created');
     }
 
-    /**
-     * Seed admin user
-     */
-    private function seedAdmin(): void
+    // =========================================================
+    //  TENANTS  ← NEW
+    // =========================================================
+
+    private function seedTenants(): void
     {
-        $this->command->info('👑 Seeding admin...');
+        $this->command->info('🏢 Seeding tenants...');
 
-        $adminUser = User::create([
-            'name' => 'System Administrator',
-            'email' => 'admin@example.com',
-            'password' => Hash::make('password'),
-            'activation' => true,
-        ]);
-
-        Admin::create(['user_id' => $adminUser->id]);
-
-        $this->command->info('✓ Admin created');
-    }
-
-    /**
-     * Seed secretaries
-     */
-    private function seedSecretaries(): void
-    {
-        $this->command->info('📝 Seeding secretaries...');
-
-        $secretaries = [
+        $tenantData = [
             [
-                'name' => 'Sarah Johnson',
-                'email' => 'staff1@example.com',
-                'phone' => '555-0101',
+                'name'          => 'City Medical Clinic',
+                'slug'          => 'city-clinic',
+                'business_type' => 'healthcare',
+                'primary_color' => '#3B82F6',
+                'config'        => [
+                    'provider_label'  => 'Physician',
+                    'client_label'    => 'Patient',
+                    'staff_label'     => 'Secretary',
+                    'booking_label'   => 'Appointment',
+                    'note_label'      => 'Diagnosis',
+                    'features'        => ['diagnosis', 'prescriptions', 'medical_history'],
+                ],
             ],
             [
-                'name' => 'Emily Davis',
-                'email' => 'staff2@example.com',
-                'phone' => '555-0102',
+                'name'          => 'Glow Beauty Salon',
+                'slug'          => 'glow-salon',
+                'business_type' => 'salon',
+                'primary_color' => '#EC4899',
+                'config'        => [
+                    'provider_label'  => 'Stylist',
+                    'client_label'    => 'Client',
+                    'staff_label'     => 'Receptionist',
+                    'booking_label'   => 'Appointment',
+                    'note_label'      => 'Session Notes',
+                    'features'        => ['service_menu', 'style_history'],
+                ],
             ],
             [
-                'name' => 'Michael Brown',
-                'email' => 'staff3@example.com',
-                'phone' => '555-0103',
+                'name'          => 'FitLife Gym',
+                'slug'          => 'fitlife-gym',
+                'business_type' => 'gym',
+                'primary_color' => '#10B981',
+                'config'        => [
+                    'provider_label'  => 'Trainer',
+                    'client_label'    => 'Member',
+                    'staff_label'     => 'Receptionist',
+                    'booking_label'   => 'Session',
+                    'note_label'      => 'Progress Notes',
+                    'features'        => ['workout_plans', 'progress_tracking'],
+                ],
+            ],
+            [
+                'name'          => 'Justice Legal Firm',
+                'slug'          => 'justice-legal',
+                'business_type' => 'legal',
+                'primary_color' => '#6366F1',
+                'config'        => [
+                    'provider_label'  => 'Lawyer',
+                    'client_label'    => 'Client',
+                    'staff_label'     => 'Paralegal',
+                    'booking_label'   => 'Consultation',
+                    'note_label'      => 'Case Notes',
+                    'features'        => ['case_management', 'document_storage'],
+                ],
             ],
         ];
 
-        foreach ($secretaries as $sec) {
+        foreach ($tenantData as $data) {
+            $tenant = Tenant::create([
+                'name'          => $data['name'],
+                'slug'          => $data['slug'],
+                'business_type' => $data['business_type'],
+                'primary_color' => $data['primary_color'],
+                'config'        => $data['config'],
+                'active'        => true,
+            ]);
+
+            // Store by slug so other methods can look them up easily
+            $this->tenants[$data['slug']] = $tenant;
+
+            $this->command->info("   ✓ {$tenant->name} ({$tenant->business_type})");
+        }
+
+        $this->command->info('✓ ' . Tenant::count() . ' tenants created');
+    }
+
+    // =========================================================
+    //  ADMIN  (global — no tenant)
+    // =========================================================
+
+    private function seedAdmin(): void
+    {
+        $this->command->info('👑 Seeding admins...');
+
+        $admins = [
+            ['name' => 'System Administrator', 'email' => 'admin@app.com'],
+            ['name' => 'Super Admin',           'email' => 'superadmin@app.com'],
+        ];
+
+        foreach ($admins as $data) {
             $user = User::create([
-                'name' => $sec['name'],
-                'email' => $sec['email'],
-                'password' => Hash::make('password'),
+                'name'       => $data['name'],
+                'email'      => $data['email'],
+                'password'   => Hash::make('password'),
+                'activation' => true,
+            ]);
+
+            Admin::create(['user_id' => $user->id]);
+        }
+
+        $this->command->info('✓ ' . Admin::count() . ' admins created');
+    }
+
+    // =========================================================
+    //  STAFF  — distributed across tenants
+    // =========================================================
+
+    private function seedStaff(): void
+    {
+        $this->command->info('📋 Seeding staff...');
+
+        // Each tenant gets at least one staff member
+        $staffList = [
+            ['name' => 'Sarah Johnson', 'email' => 'sarah@app.com',   'phone' => '555-0101', 'tenant' => 'city-clinic'],
+            ['name' => 'Emily Davis',   'email' => 'emily@app.com',    'phone' => '555-0102', 'tenant' => 'city-clinic'],
+            ['name' => 'Michael Brown', 'email' => 'michael@app.com',  'phone' => '555-0103', 'tenant' => 'glow-salon'],
+            ['name' => 'Laura Wilson',  'email' => 'laura@app.com',    'phone' => '555-0104', 'tenant' => 'fitlife-gym'],
+            ['name' => 'Chris Taylor',  'email' => 'chris@app.com',    'phone' => '555-0105', 'tenant' => 'justice-legal'],
+        ];
+
+        foreach ($staffList as $data) {
+            $user = User::create([
+                'name'       => $data['name'],
+                'email'      => $data['email'],
+                'password'   => Hash::make('password'),
                 'activation' => true,
             ]);
 
             Staff::create([
-                'user_id' => $user->id,
-                'phone' => $sec['phone'],
-                'city_id' => City::inRandomOrder()->first()->id,
+                'user_id'   => $user->id,
+                'phone'     => $data['phone'],
+                'city_id'   => City::inRandomOrder()->first()->id,
+                'tenant_id' => $this->tenants[$data['tenant']]->id,   // ← tenant scoped
             ]);
         }
 
-        $this->command->info('✓ Secretaries created');
+        $this->command->info('✓ ' . Staff::count() . ' staff created');
     }
 
-    /**
-     * Seed providers
-     */
+    // =========================================================
+    //  PROVIDERS  — distributed across tenants
+    // =========================================================
+
     private function seedProviders(): void
     {
-        $this->command->info('👨‍⚕️ Seeding providers...');
+        $this->command->info('🧑‍💼 Seeding providers...');
 
         $providers = [
-            ['name' => 'Dr. Alice Williams', 'email' => 'alice@example.com', 'specialization' => 'Cardiology', 'phone' => '555-1001'],
-            ['name' => 'Dr. Robert Smith', 'email' => 'robert@example.com', 'specialization' => 'Neurology', 'phone' => '555-1002'],
-            ['name' => 'Dr. Jennifer Martinez', 'email' => 'jennifer@example.com', 'specialization' => 'Pediatrics', 'phone' => '555-1003'],
-            ['name' => 'Dr. James Anderson', 'email' => 'james@example.com', 'specialization' => 'Orthopedics', 'phone' => '555-1004'],
-            ['name' => 'Dr. Maria Garcia', 'email' => 'maria@example.com', 'specialization' => 'Dermatology', 'phone' => '555-1005'],
-            ['name' => 'Dr. David Lee', 'email' => 'david@example.com', 'specialization' => 'Internal Medicine', 'phone' => '555-1006'],
-            ['name' => 'Dr. Linda Taylor', 'email' => 'linda@example.com', 'specialization' => 'Psychiatry', 'phone' => '555-1007'],
-            ['name' => 'Dr. Richard Wilson', 'email' => 'richard@example.com', 'specialization' => 'General Surgery', 'phone' => '555-1008'],
+            // Healthcare
+            ['name' => 'Dr. Alice Williams',    'email' => 'alice@app.com',    'service' => 'Cardiology',        'phone' => '555-1001', 'tenant' => 'city-clinic'],
+            ['name' => 'Dr. Robert Smith',      'email' => 'robert@app.com',   'service' => 'Neurology',         'phone' => '555-1002', 'tenant' => 'city-clinic'],
+            ['name' => 'Dr. Jennifer Martinez', 'email' => 'jennifer@app.com', 'service' => 'Pediatrics',        'phone' => '555-1003', 'tenant' => 'city-clinic'],
+            // Salon
+            ['name' => 'Mona Hassan',           'email' => 'mona@app.com',     'service' => 'Hair Styling',      'phone' => '555-1004', 'tenant' => 'glow-salon'],
+            ['name' => 'Layla Ahmed',           'email' => 'layla@app.com',    'service' => 'Skin Care',         'phone' => '555-1005', 'tenant' => 'glow-salon'],
+            // Gym
+            ['name' => 'Jake Miller',           'email' => 'jake@app.com',     'service' => 'Personal Training', 'phone' => '555-1006', 'tenant' => 'fitlife-gym'],
+            ['name' => 'Sara Connor',           'email' => 'sara@app.com',     'service' => 'Yoga & Pilates',    'phone' => '555-1007', 'tenant' => 'fitlife-gym'],
+            // Legal
+            ['name' => 'James Knight',          'email' => 'jamesk@app.com',   'service' => 'Corporate Law',     'phone' => '555-1008', 'tenant' => 'justice-legal'],
         ];
 
-        foreach ($providers as $doc) {
+        foreach ($providers as $data) {
             $user = User::create([
-                'name' => $doc['name'],
-                'email' => $doc['email'],
-                'password' => Hash::make('password'),
+                'name'       => $data['name'],
+                'email'      => $data['email'],
+                'password'   => Hash::make('password'),
                 'activation' => true,
             ]);
 
             Provider::create([
-                'user_id' => $user->id,
-                'specialization' => $doc['specialization'],
-                'phone' => $doc['phone'],
-                'city_id' => City::inRandomOrder()->first()->id,
+                'user_id'        => $user->id,
+                'specialization' => $data['service'],
+                'phone'          => $data['phone'],
+                'city_id'        => City::inRandomOrder()->first()->id,
+                'tenant_id'      => $this->tenants[$data['tenant']]->id,   // ← tenant scoped
             ]);
         }
 
-        $this->command->info('✓ Providers created');
+        $this->command->info('✓ ' . Provider::count() . ' providers created');
     }
 
-    /**
-     * Seed clients
-     */
+    // =========================================================
+    //  CLIENTS  — distributed across tenants
+    // =========================================================
+
     private function seedClients(): void
     {
-        $this->command->info('🏥 Seeding clients...');
+        $this->command->info('👥 Seeding clients...');
 
         $clients = [
-            ['name' => 'Jane Doe', 'email' => 'jane@example.com', 'phone' => '555-2001', 'national_id' => 'PAT001'],
-            ['name' => 'John Smith', 'email' => 'john@example.com', 'phone' => '555-2002', 'national_id' => 'PAT002'],
-            ['name' => 'Emma Wilson', 'email' => 'emma@example.com', 'phone' => '555-2003', 'national_id' => 'PAT003'],
-            ['name' => 'Michael Johnson', 'email' => 'michael@example.com', 'phone' => '555-2004', 'national_id' => 'PAT004'],
-            ['name' => 'Sophia Brown', 'email' => 'sophia@example.com', 'phone' => '555-2005', 'national_id' => 'PAT005'],
-            ['name' => 'William Davis', 'email' => 'william@example.com', 'phone' => '555-2006', 'national_id' => 'PAT006'],
-            ['name' => 'Olivia Martinez', 'email' => 'olivia@example.com', 'phone' => '555-2007', 'national_id' => 'PAT007'],
-            ['name' => 'James Garcia', 'email' => 'jamesgarcia@example.com', 'phone' => '555-2008', 'national_id' => 'PAT008'],
-            ['name' => 'Isabella Rodriguez', 'email' => 'isabella@example.com', 'phone' => '555-2009', 'national_id' => 'PAT009'],
-            ['name' => 'Benjamin Lee', 'email' => 'benjamin@example.com', 'phone' => '555-2010', 'national_id' => 'PAT010'],
-            ['name' => 'Mia Anderson', 'email' => 'mia@example.com', 'phone' => '555-2011', 'national_id' => 'PAT011'],
-            ['name' => 'Lucas Taylor', 'email' => 'lucas@example.com', 'phone' => '555-2012', 'national_id' => 'PAT012'],
-            ['name' => 'Charlotte Thomas', 'email' => 'charlotte@example.com', 'phone' => '555-2013', 'national_id' => 'PAT013'],
-            ['name' => 'Henry Moore', 'email' => 'henry@example.com', 'phone' => '555-2014', 'national_id' => 'PAT014'],
-            ['name' => 'Amelia Jackson', 'email' => 'amelia@example.com', 'phone' => '555-2015', 'national_id' => 'PAT015'],
+            ['name' => 'Jane Doe',           'email' => 'jane@app.com',      'phone' => '555-2001', 'national_id' => 'CLI001', 'tenant' => 'city-clinic'],
+            ['name' => 'John Smith',          'email' => 'john@app.com',      'phone' => '555-2002', 'national_id' => 'CLI002', 'tenant' => 'city-clinic'],
+            ['name' => 'Emma Wilson',         'email' => 'emma@app.com',      'phone' => '555-2003', 'national_id' => 'CLI003', 'tenant' => 'city-clinic'],
+            ['name' => 'Michael Johnson',     'email' => 'michaelj@app.com',  'phone' => '555-2004', 'national_id' => 'CLI004', 'tenant' => 'city-clinic'],
+            ['name' => 'Sophia Brown',        'email' => 'sophia@app.com',    'phone' => '555-2005', 'national_id' => 'CLI005', 'tenant' => 'city-clinic'],
+            ['name' => 'Olivia Martinez',     'email' => 'olivia@app.com',    'phone' => '555-2007', 'national_id' => 'CLI007', 'tenant' => 'glow-salon'],
+            ['name' => 'James Garcia',        'email' => 'jamesg@app.com',    'phone' => '555-2008', 'national_id' => 'CLI008', 'tenant' => 'glow-salon'],
+            ['name' => 'Isabella Rodriguez',  'email' => 'isabella@app.com',  'phone' => '555-2009', 'national_id' => 'CLI009', 'tenant' => 'glow-salon'],
+            ['name' => 'Benjamin Lee',        'email' => 'benjamin@app.com',  'phone' => '555-2010', 'national_id' => 'CLI010', 'tenant' => 'fitlife-gym'],
+            ['name' => 'Mia Anderson',        'email' => 'mia@app.com',       'phone' => '555-2011', 'national_id' => 'CLI011', 'tenant' => 'fitlife-gym'],
+            ['name' => 'Lucas Taylor',        'email' => 'lucas@app.com',     'phone' => '555-2012', 'national_id' => 'CLI012', 'tenant' => 'fitlife-gym'],
+            ['name' => 'Charlotte Thomas',    'email' => 'charlotte@app.com', 'phone' => '555-2013', 'national_id' => 'CLI013', 'tenant' => 'justice-legal'],
+            ['name' => 'Henry Moore',         'email' => 'henry@app.com',     'phone' => '555-2014', 'national_id' => 'CLI014', 'tenant' => 'justice-legal'],
+            ['name' => 'Amelia Jackson',      'email' => 'amelia@app.com',    'phone' => '555-2015', 'national_id' => 'CLI015', 'tenant' => 'justice-legal'],
+            ['name' => 'Noah White',          'email' => 'noah@app.com',      'phone' => '555-2016', 'national_id' => 'CLI016', 'tenant' => 'city-clinic'],
+            ['name' => 'Ava Harris',          'email' => 'ava@app.com',       'phone' => '555-2017', 'national_id' => 'CLI017', 'tenant' => 'glow-salon'],
+            ['name' => 'Liam Martin',         'email' => 'liam@app.com',      'phone' => '555-2018', 'national_id' => 'CLI018', 'tenant' => 'fitlife-gym'],
+            ['name' => 'Grace Thompson',      'email' => 'grace@app.com',     'phone' => '555-2019', 'national_id' => 'CLI019', 'tenant' => 'justice-legal'],
+            ['name' => 'Ethan Clark',         'email' => 'ethan@app.com',     'phone' => '555-2020', 'national_id' => 'CLI020', 'tenant' => 'city-clinic'],
+            ['name' => 'Zoe Baker',           'email' => 'zoe@app.com',       'phone' => '555-2021', 'national_id' => 'CLI021', 'tenant' => 'glow-salon'],
         ];
 
-        $secretaries = Staff::all();
+        foreach ($clients as $data) {
+            $tenantId = $this->tenants[$data['tenant']]->id;
 
-        foreach ($clients as $pat) {
+            // Pick a staff member from the same tenant
+            $staffId = Staff::where('tenant_id', $tenantId)->inRandomOrder()->first()?->id;
+
             $user = User::create([
-                'name' => $pat['name'],
-                'email' => $pat['email'],
-                'password' => Hash::make('password'),
+                'name'       => $data['name'],
+                'email'      => $data['email'],
+                'password'   => Hash::make('password'),
                 'activation' => true,
             ]);
 
             Client::create([
-                'user_id' => $user->id,
-                'phone' => $pat['phone'],
-                'national_id' => $pat['national_id'],
-                'city_id' => City::inRandomOrder()->first()->id,
-                'staff_id' => $secretaries->random()->id,
+                'user_id'     => $user->id,
+                'national_id' => $data['national_id'],
+                'phone'       => $data['phone'],
+                'gender'      => rand(0, 1) ? 'male' : 'female',
+                'birth_date'  => now()->subYears(rand(18, 65))->subDays(rand(0, 365)),
+                'city_id'     => City::inRandomOrder()->first()->id,
+                'staff_id'    => $staffId,
+                'tenant_id'   => $tenantId,   // ← tenant scoped
             ]);
         }
 
-        $this->command->info('✓ Clients created');
+        $this->command->info('✓ ' . Client::count() . ' clients created');
     }
 
-    /**
-     * Seed bookings and diagnoses
-     */
+    // =========================================================
+    //  BOOKINGS + NOTES
+    // =========================================================
+
     private function seedBookings(): void
     {
-        $this->command->info('📅 Seeding bookings...');
-
-        $clients = Client::all();
-        $providers = Provider::all();
-        $secretaries = Staff::all();
+        $this->command->info('📅 Seeding bookings & notes...');
 
         $bookingCount = 0;
-        $noteCount = 0;
+        $noteCount    = 0;
 
-        foreach ($clients as $client) {
-            // Each client gets 2-4 bookings
-            $numBookings = rand(2, 4);
+        // Iterate per tenant so bookings never mix across tenants
+        foreach ($this->tenants as $slug => $tenant) {
+            $clients   = Client::where('tenant_id', $tenant->id)->get();
+            $providers = Provider::where('tenant_id', $tenant->id)->get();
+            $staffList = Staff::where('tenant_id', $tenant->id)->get();
 
-            for ($i = 0; $i < $numBookings; $i++) {
-                $provider = $providers->random();
-                $staff = $secretaries->random();
+            if ($clients->isEmpty() || $providers->isEmpty()) continue;
 
-                // Mix of past, today, and future bookings
-                $daysOffset = match($i) {
-                    0 => -rand(7, 30),    // Past booking
-                    1 => -rand(1, 6),     // Recent past
-                    2 => 0,               // Today (some clients)
-                    default => rand(1, 14) // Future
-                };
+            foreach ($clients as $client) {
+                $numBookings = rand(2, 5);
 
-                $bookingDate = now()->addDays($daysOffset);
-                $bookingTime = sprintf('%02d:00', rand(9, 16)); // 9 AM to 4 PM
+                for ($i = 0; $i < $numBookings; $i++) {
+                    $provider = $providers->random();
+                    $staff    = $staffList->isNotEmpty() ? $staffList->random() : null;
 
-                // Determine status
-                $status = match(true) {
-                    $daysOffset < -1 => 'completed',
-                    $daysOffset === 0 && rand(0, 1) === 0 => 'completed',
-                    $daysOffset === 0 => 'scheduled',
-                    $daysOffset > 0 => 'scheduled',
-                    default => rand(0, 10) === 0 ? 'cancelled' : 'completed'
-                };
+                    $daysOffset = match(true) {
+                        $i === 0 => -rand(14, 60),
+                        $i === 1 => -rand(1, 13),
+                        $i === 2 => 0,
+                        default  => rand(1, 21),
+                    };
 
-                $booking = Booking::create([
-                    'client_id' => $client->id,
-                    'provider_id' => $provider->id,
-                    'staff_id' => $staff->id,
-                    'booking_date' => $bookingDate,
-                    'booking_time' => $bookingTime,
-                    'status' => $status,
-                    'notes' => $this->getRandomBookingNote(),
-                ]);
+                    $bookingDate = now()->addDays($daysOffset)->format('Y-m-d');
+                    $bookingTime = sprintf('%02d:00', rand(9, 16));
 
-                $bookingCount++;
+                    $status = match(true) {
+                        $daysOffset < -1 => 'completed',
+                        $daysOffset === 0 => rand(0, 1) ? 'completed' : 'scheduled',
+                        $daysOffset > 0  => 'scheduled',
+                        default          => rand(0, 8) === 0 ? 'cancelled' : 'completed',
+                    };
 
-                // Add note for completed bookings (80% chance)
-                if ($status === 'completed' && rand(1, 10) <= 8) {
-                    $noteData = $this->getRandomNote();
-
-                    Note::create([
-                        'booking_id' => $booking->id,
-                        'symptoms' => $noteData['symptoms'],
-                        'note' => $noteData['note'],
-                        'prescription' => $noteData['prescription'],
-                        'notes' => $noteData['notes'],
+                    $booking = Booking::create([
+                        'client_id'    => $client->id,
+                        'provider_id'  => $provider->id,
+                        'staff_id'     => $staff?->id,
+                        'tenant_id'    => $tenant->id,   // ← tenant scoped
+                        'booking_date' => $bookingDate . ' ' . $bookingTime,
+                        'booking_time' => $bookingTime,
+                        'status'       => $status,
+                        'notes'        => $this->randomBookingNote(),
                     ]);
 
-                    $noteCount++;
+                    $bookingCount++;
+
+                    if ($status === 'completed' && rand(1, 10) <= 8) {
+                        $noteData = $this->randomNote();
+
+                        Note::create([
+                            'booking_id'   => $booking->id,
+                            'symptoms'     => $noteData['symptoms'],
+                            'prescription' => $noteData['prescription'],
+                            'notes'        => $noteData['notes'],
+                            'tenant_id'    => $tenant->id,
+                        ]);
+
+                        $noteCount++;
+                    }
                 }
             }
         }
 
-        $this->command->info("✓ Created {$bookingCount} bookings");
-        $this->command->info("✓ Created {$noteCount} diagnoses");
+        $this->command->info("✓ {$bookingCount} bookings created");
+        $this->command->info("✓ {$noteCount} notes created");
     }
 
-    /**
-     * Get random booking notes
-     */
-    private function getRandomBookingNote(): string
+    // =========================================================
+    //  HELPERS
+    // =========================================================
+
+    private function randomBookingNote(): string
     {
-        $notes = [
-            'Regular checkup booking',
-            'Follow-up visit for previous condition',
-            'Client requested urgent consultation',
-            'Annual health screening',
+        return collect([
+            'Regular checkup',
+            'Follow-up visit',
+            'Urgent consultation requested',
+            'Annual screening',
             'Post-treatment evaluation',
             'New client consultation',
             'Routine examination',
             'Client experiencing symptoms',
-        ];
-
-        return $notes[array_rand($notes)];
+            'Referred by another provider',
+            'Second opinion requested',
+        ])->random();
     }
 
-    /**
-     * Get random note data
-     */
-    private function getRandomNote(): array
+    private function randomNote(): array
     {
-        $diagnoses = [
+        return collect([
             [
-                'symptoms' => 'Client reports persistent headache, fatigue, and mild fever for 3 days. No recent travel history. Denies nausea or vision changes.',
-                'note' => 'Upper respiratory tract infection (Common cold). Mild dehydration noted. No signs of bacterial infection.',
-                'prescription' => "1. Paracetamol 500mg - Take 1 tablet every 6 hours as needed for fever\n2. Increase fluid intake to at least 2 liters per day\n3. Rest for 2-3 days\n4. Vitamin C 1000mg daily for 5 days",
-                'notes' => 'Client advised to return if fever persists beyond 3 days or if symptoms worsen. Avoid cold drinks and maintain proper rest.',
+                'symptoms'     => 'Persistent headache, fatigue, and mild fever for 3 days.',
+                'diagnosis'    => 'Upper respiratory tract infection. Mild dehydration noted.',
+                'prescription' => "1. Paracetamol 500mg every 6 hours\n2. Increase fluids to 2L/day\n3. Rest 2-3 days",
+                'notes'        => 'Return if fever persists beyond 3 days.',
             ],
             [
-                'symptoms' => 'Acute lower back pain for 2 days following heavy lifting. Pain radiates to right leg. No numbness or tingling. Difficulty bending forward.',
-                'note' => 'Acute lumbar muscle strain. No signs of herniated disc or nerve compression. Normal range of motion in legs.',
-                'prescription' => "1. Ibuprofen 400mg - Take 1 tablet three times daily with food for 5 days\n2. Apply hot compress to affected area 15-20 minutes, 3 times daily\n3. Bed rest for 48 hours\n4. Gentle stretching exercises after 2 days",
-                'notes' => 'Client educated on proper lifting techniques. Advised to avoid heavy lifting for 2 weeks. Return if pain worsens or numbness develops.',
+                'symptoms'     => 'Acute lower back pain after heavy lifting.',
+                'diagnosis'    => 'Lumbar muscle strain. No nerve compression.',
+                'prescription' => "1. Ibuprofen 400mg three times daily\n2. Hot compress 3x daily\n3. Rest 48 hours",
+                'notes'        => 'Avoid heavy lifting for 2 weeks.',
             ],
             [
-                'symptoms' => 'Dry cough for 1 week, mild chest tightness, no fever. Shortness of breath with exertion. History of seasonal allergies.',
-                'note' => 'Allergic bronchitis likely triggered by seasonal allergens. Chest examination clear, no wheezing. Oxygen saturation 98%.',
-                'prescription' => "1. Cetirizine 10mg - Once daily before bedtime for 7 days\n2. Dextromethorphan cough syrup - 10ml three times daily\n3. Steam inhalation twice daily\n4. Avoid known allergens and dusty environments",
-                'notes' => 'Follow-up in 1 week if symptoms persist. Consider allergy testing if recurrent episodes occur. Maintain good hydration.',
+                'symptoms'     => 'Dry cough, mild chest tightness, no fever.',
+                'diagnosis'    => 'Allergic bronchitis. O2 saturation 98%.',
+                'prescription' => "1. Cetirizine 10mg once daily\n2. Steam inhalation twice daily",
+                'notes'        => 'Follow-up in 1 week if symptoms persist.',
             ],
             [
-                'symptoms' => 'Severe sore throat, difficulty swallowing, fever 38.5°C. Enlarged tonsils with white patches. No cough or runny nose.',
-                'note' => 'Acute bacterial tonsillitis (Streptococcal pharyngitis suspected). Positive throat examination findings. Lymph nodes enlarged.',
-                'prescription' => "1. Amoxicillin 500mg - Take 1 capsule three times daily for 7 days (complete full course)\n2. Paracetamol 500mg for fever as needed\n3. Warm salt water gargles 4-5 times daily\n4. Throat lozenges as needed",
-                'notes' => 'Emphasized importance of completing antibiotic course. Soft diet recommended. Return if breathing difficulty develops. Expected improvement in 48-72 hours.',
+                'symptoms'     => 'Severe sore throat, difficulty swallowing, fever 38.5°C.',
+                'diagnosis'    => 'Acute bacterial tonsillitis.',
+                'prescription' => "1. Amoxicillin 500mg 3x daily for 7 days\n2. Warm salt water gargles",
+                'notes'        => 'Complete the full antibiotic course.',
             ],
             [
-                'symptoms' => 'Intermittent abdominal pain for 2 days, mainly upper abdomen. Bloating after meals. No vomiting or diarrhea. Stress at work mentioned.',
-                'note' => 'Functional dyspepsia (Stress-induced gastritis). No alarming symptoms. Abdomen soft on examination.',
-                'prescription' => "1. Omeprazole 20mg - Once daily before breakfast for 14 days\n2. Avoid spicy and fatty foods\n3. Eat small frequent meals\n4. Stress management techniques recommended",
-                'notes' => 'Lifestyle modifications discussed. Return if symptoms worsen or if develops vomiting/blood in stool. Consider stress counseling.',
+                'symptoms'     => 'Intermittent abdominal pain, bloating after meals.',
+                'diagnosis'    => 'Functional dyspepsia. Stress-induced gastritis.',
+                'prescription' => "1. Omeprazole 20mg before breakfast\n2. Small frequent meals",
+                'notes'        => 'Consider stress counseling.',
             ],
-            [
-                'symptoms' => 'Skin rash on arms and legs for 5 days. Itching moderate. No recent new medications or foods. No fever or joint pain.',
-                'note' => 'Contact dermatitis (Allergic reaction suspected). Erythematous rash with mild scaling. No systemic involvement.',
-                'prescription' => "1. Cetirizine 10mg - Once daily for 7 days\n2. Hydrocortisone cream 1% - Apply thin layer twice daily for 5 days\n3. Moisturizer after bathing\n4. Avoid scratching and use loose cotton clothing",
-                'notes' => 'Advised to identify and avoid potential allergens. Keep skin moisturized. Return if spreading or worsening.',
-            ],
-            [
-                'symptoms' => 'Generalized joint pain and stiffness, worse in mornings. Fatigue and occasional low-grade fever. Duration 10 days.',
-                'note' => 'Viral arthralgia (Post-viral syndrome suspected). No joint swelling or redness. Symmetric involvement noted.',
-                'prescription' => "1. Ibuprofen 400mg - Twice daily with food for 7 days\n2. Adequate rest and sleep\n3. Gentle exercises and stretching\n4. Multivitamin supplement",
-                'notes' => 'Blood tests ordered (CBC, ESR, CRP) if symptoms persist beyond 2 weeks. Adequate hydration advised. Follow-up in 2 weeks.',
-            ],
-            [
-                'symptoms' => 'Dizzy spells for 3 days, worse when standing quickly. No chest pain or palpitations. Reduced appetite and fluid intake.',
-                'note' => 'Orthostatic hypotension secondary to dehydration. Blood pressure 95/60 mmHg. No cardiac abnormalities detected.',
-                'prescription' => "1. Increase fluid intake to 2-3 liters daily\n2. Increase salt intake moderately\n3. Rise slowly from sitting/lying positions\n4. Small frequent meals",
-                'notes' => 'Blood pressure monitoring at home recommended. Return if fainting occurs or if symptoms persist after hydration improvement.',
-            ],
-        ];
+        ])->random();
+    }
 
-        return $diagnoses[array_rand($diagnoses)];
+    // =========================================================
+    //  SUMMARY
+    // =========================================================
+
+    private function printSummary(): void
+    {
+        $this->command->info('');
+        $this->command->info('✅ Database seeded successfully!');
+        $this->command->info('');
+        $this->command->info('📊 Summary:');
+        $this->command->info('   Countries : ' . Country::count());
+        $this->command->info('   Cities    : ' . City::count());
+        $this->command->info('   Tenants   : ' . Tenant::count());
+        $this->command->info('   Admins    : ' . Admin::count());
+        $this->command->info('   Staff     : ' . Staff::count());
+        $this->command->info('   Providers : ' . Provider::count());
+        $this->command->info('   Clients   : ' . Client::count());
+        $this->command->info('   Bookings  : ' . Booking::count());
+        $this->command->info('   Notes     : ' . Note::count());
+        $this->command->info('');
+        $this->command->info('🔑 Demo Accounts (password: password)');
+        $this->command->info('   Admin           : admin@app.com');
+        $this->command->info('   Provider/Clinic : alice@app.com     (City Medical Clinic)');
+        $this->command->info('   Provider/Salon  : mona@app.com      (Glow Beauty Salon)');
+        $this->command->info('   Provider/Gym    : jake@app.com      (FitLife Gym)');
+        $this->command->info('   Provider/Legal  : jamesk@app.com    (Justice Legal Firm)');
+        $this->command->info('   Staff/Clinic    : sarah@app.com     (City Medical Clinic)');
+        $this->command->info('   Client/Clinic   : jane@app.com      (City Medical Clinic)');
+        $this->command->info('');
+
+        // Per-tenant breakdown
+        $this->command->info('🏢 Per-Tenant Breakdown:');
+        foreach ($this->tenants as $slug => $tenant) {
+            $this->command->info("   {$tenant->name}:");
+            $this->command->info('      Providers : ' . Provider::where('tenant_id', $tenant->id)->count());
+            $this->command->info('      Staff     : ' . Staff::where('tenant_id', $tenant->id)->count());
+            $this->command->info('      Clients   : ' . Client::where('tenant_id', $tenant->id)->count());
+            $this->command->info('      Bookings  : ' . Booking::where('tenant_id', $tenant->id)->count());
+        }
+        $this->command->info('');
     }
 }

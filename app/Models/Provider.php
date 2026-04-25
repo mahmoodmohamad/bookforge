@@ -16,15 +16,18 @@ class Provider extends Model
         'city_id',
     ];
 
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::deleting(function (self $provider) {
-            $provider->user()->delete();
-        });
-    }
-
+   protected static function booted()
+{
+    static::addGlobalScope('tenant', function ($query) {
+        if (app()->has('tenant')) {
+            $query->where('tenant_id', app('tenant')->id);
+        }
+    });
+}
+public function tenant()
+{
+    return $this->belongsTo(Tenant::class);
+}
     // Relationships
     public function user()
     {

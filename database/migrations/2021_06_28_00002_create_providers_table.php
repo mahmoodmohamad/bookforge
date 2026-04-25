@@ -20,7 +20,6 @@ return new class extends Migration
     $table->string('phone');
     $table->foreignId('city_id')->constrained()->onDelete('cascade');
     $table->foreignId('tenant_id')
-          ->after('id')
           ->constrained()
           ->onDelete('cascade');
     $table->timestamps();

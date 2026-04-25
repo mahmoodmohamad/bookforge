@@ -15,7 +15,7 @@ class Booking extends Model
         'provider_id',
         'staff_id',
         'booking_date',
-        'booking_time', // ✅ Add this
+        'booking_time', 
         'status',
         'notes'
     ];
@@ -23,7 +23,17 @@ class Booking extends Model
     protected $casts = [
         'booking_date' => 'datetime'
     ];
-
+protected static function booted()
+{
+    static::addGlobalScope('tenant', function ($query) {
+        if (app()->has('tenant')) {
+            $query->where('tenant_id', app('tenant')->id);
+        }
+    });
+}public function tenant()
+{
+    return $this->belongsTo(Tenant::class);
+}
     public function provider()  // was: provider()
 {
     return $this->belongsTo(Provider::class);

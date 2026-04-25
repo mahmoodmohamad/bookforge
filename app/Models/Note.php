@@ -12,40 +12,37 @@ class Note extends Model
     protected $fillable = [
         'booking_id',  
         'symptoms',
-        'note',
-        'prescription',
         'notes',
     ];
 
-    // Relationships
-    public function booking()
-    {
-        return $this->belongsTo(Booking::class);
-    }
+    protected static function booted()
+{
+    static::addGlobalScope('tenant', function ($query) {
+        if (app()->has('tenant')) {
+            $query->where('tenant_id', app('tenant')->id);
+        }
+    });
+}
+// Remove the problematic method, keep only:
+public function getClient()
+{
+    return $this->booking->client;
+}
 
-    // ✅ للوصول للـ client عن طريق booking
-    public function client()
-    {
-        return $this->hasOneThrough(
-            Client::class,
-            Booking::class,
-            'id',           // FK في bookings
-            'id',           // FK في clients
-            'booking_id', // Local key في diagnoses
-            'client_id'     // Local key في bookings
-        );
-    }
+public function getProvider()
+{
+    return $this->booking->provider;
+}
 
-    // ✅ للوصول للـ provider عن طريق booking
-    public function provider()
-    {
-        return $this->hasOneThrough(
-            Provider::class,
-            Booking::class,
-            'id',
-            'id',
-            'booking_id',
-            'provider_id'
-        );
-    }
+// Or simply use accessors:
+public function getClientAttribute()
+{
+    return $this->booking->client;
+}
+
+public function getProviderAttribute()
+{
+    return $this->booking->provider;
+}
+
 }

@@ -15,11 +15,13 @@ return new class extends Migration
     {
         Schema::create('tenants', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-    $table->string('slug')->unique();  // used in URL
-    $table->string('business_type')->default('healthcare');
-    $table->json('config')->nullable(); // labels, colors, features
-    $table->boolean('is_active')->default(true);
+    $table->string('name');
+    $table->string('slug')->unique();          // e.g. "city-clinic"
+    $table->string('business_type');           // healthcare, salon, gym, legal
+    $table->string('logo')->nullable();
+    $table->string('primary_color')->default('#3B82F6');
+    $table->json('config')->nullable();        // custom labels, features
+    $table->boolean('active')->default(true);
     $table->timestamps();
         });
     }

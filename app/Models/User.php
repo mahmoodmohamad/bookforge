@@ -16,7 +16,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'activation',
+        'activation', 'tenant_id'
     ];
 
     protected $hidden = [
@@ -28,7 +28,20 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'activation' => 'boolean',
     ];
+protected static function booted()
+{
+    static::addGlobalScope('tenant', function ($query) {
+        if (app()->has('tenant')) {
+            $query->where('tenant_id', app('tenant')->id);
+        }
+    });
+}
 
+// Add relationship
+public function tenant()
+{
+    return $this->belongsTo(Tenant::class);
+}
     // Relationships
     public function admin(): HasOne
     {

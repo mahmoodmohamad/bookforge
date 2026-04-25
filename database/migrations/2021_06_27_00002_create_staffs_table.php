@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateSecretariesTable extends Migration
+class CreateStaffsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,13 @@ class CreateSecretariesTable extends Migration
      */
     public function up()
     {
-        Schema::create('staffs', function (Blueprint $table) {
+        Schema::create('staff', function (Blueprint $table) {
             $table->id();
     $table->foreignId('user_id')->constrained()->onDelete('cascade');
     $table->string('phone');
   
     $table->foreignId('city_id')->constrained()->onDelete('cascade');
      $table->foreignId('tenant_id')
-          ->after('id')
           ->constrained()
           ->onDelete('cascade');
     $table->timestamps();
@@ -34,6 +33,6 @@ class CreateSecretariesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('secretaries');
+        Schema::dropIfExists('staff');
     }
 }

@@ -27,7 +27,6 @@ return new class extends Migration
     ])->default('scheduled');
     $table->text('notes')->nullable();
      $table->foreignId('tenant_id')
-          ->after('id')
           ->constrained()
           ->onDelete('cascade');
     $table->timestamps();

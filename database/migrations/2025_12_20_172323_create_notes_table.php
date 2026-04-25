@@ -17,12 +17,9 @@ return new class extends Migration
             $table->id();
      $table->foreignId('booking_id')->constrained()->cascadeOnDelete();
     $table->text('symptoms');
-    $table->text('note');
-    $table->text('description')->nullable();
     $table->text('prescription')->nullable();
     $table->text('notes')->nullable();
      $table->foreignId('tenant_id')
-          ->after('id')
           ->constrained()
           ->onDelete('cascade');
     $table->timestamps();
@@ -36,6 +33,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('diagnoses');
+        Schema::dropIfExists('notes');
     }
 };

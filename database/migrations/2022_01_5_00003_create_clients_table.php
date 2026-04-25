@@ -23,7 +23,6 @@ class CreateClientsTable extends Migration
     $table->foreignId('city_id')->constrained()->onDelete('cascade');
     $table->foreignId('staff_id')->nullable()->constrained()->onDelete('set null');
      $table->foreignId('tenant_id')
-          ->after('id')
           ->constrained()
           ->onDelete('cascade');
     $table->timestamps();

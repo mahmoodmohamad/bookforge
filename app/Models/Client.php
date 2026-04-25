@@ -18,7 +18,14 @@ class Client extends Model
 		'gender',
         'birth_date',
     ];
-
+protected static function booted()
+{
+    static::addGlobalScope('tenant', function ($query) {
+        if (app()->has('tenant')) {
+            $query->where('tenant_id', app('tenant')->id);
+        }
+    });
+}
     protected static function boot()
     {
         parent::boot();
@@ -27,7 +34,10 @@ class Client extends Model
             $client->user()->delete();
         });
     }
-
+public function tenant()
+{
+    return $this->belongsTo(Tenant::class);
+}
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -48,7 +58,7 @@ class Client extends Model
         return $this->hasMany(Booking::class);
     }
 
-   public function diagnoses()
+   public function notes()
 {
     return $this->hasManyThrough(
         Note::class,

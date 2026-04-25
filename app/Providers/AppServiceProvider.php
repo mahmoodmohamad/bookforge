@@ -27,4 +27,9 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useBootstrap();
 		Schema::defaultStringLength(191);
     }
+    // In AppServiceProvider or a helper file
+function tenantLabel(string $key, string $default = ''): string
+{
+    return app('tenant')->getConfig("labels.{$key}", $default);
+}
 }

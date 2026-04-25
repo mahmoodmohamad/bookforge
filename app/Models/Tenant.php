@@ -9,7 +9,7 @@ class Tenant extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'name', 'slug', 'business_type', 'config', 'is_active'
+        'name', 'slug', 'business_type','logo','primary_color', 'config', 'active'
     ];
 
     protected $casts = [
